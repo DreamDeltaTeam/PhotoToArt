@@ -29,6 +29,21 @@ public:
         this->rgb = rgb;
         this->source.resize(w*h*rgb);
     }
+
+    void setPixel(int x, int y, Color &c) {
+        int tmp = y*image.rgb*image.w+x*image.rgb;
+        image.source[tmp]=c.r;
+        image.source[tmp+1]=c.g;
+        image.source[tmp+2]=c.b;
+    }
+
+    Color getColor(int x, int y){
+        int tmp = y*image.rgb*image.w+x*image.rgb;
+        int r = image.source[tmp];
+        int g = image.source[tmp]+1;
+        int b = image.source[tmp]+2;
+        return Color(r,g,b);
+    }
 };
 
 Image genQuard(Image image,int x,int y, int w,int h,Color c){
@@ -48,16 +63,20 @@ Image genQuard(Image image,int x,int y, int w,int h,Color c){
 }
 
 Image genCircle(Image image,int x,int y, int r,Color c){
-    for (int i=0;i<image.h;i++){
-        for (int j=0;j<image.w;j++){
-           int x1 =j+x-r;
-           int y1 = i+y-r;
-           if (x1*x1 + y1*y1 <= r*r){
-               int tmp = y1*image.rgb*image.w+x1*image.rgb;
-               image.source[tmp]=c.r;
-               image.source[tmp+1]=c.g;
-               image.source[tmp+2]=c.b;
-           }
+    if (x>0 && y>0 && x < image.w && y< image.h){
+        for (int i=-r;i<r;i++){
+            for (int j=-r;j<r;j++){
+                int x1 =j;
+                int y1 = i;
+                if (x1*x1 + y1*y1 <= r*r){
+                    x1+=x;
+                    y1+=y;
+                    int tmp = y1*image.rgb*image.w+x1*image.rgb;
+                    image.source[tmp]=c.r;
+                    image.source[tmp+1]=c.g;
+                    image.source[tmp+2]=c.b;
+                }
+          }
         }
     }
     return image;
@@ -86,9 +105,10 @@ int main()
     Image img = Image(w,h,rgb);
     Color red = Color(255,0,0);
     Color white = Color(255,255,255);
+    Color green = Color(0,255,0);
     img = fillImage(img,white);
     img = genQuard(img,100,100,100,100,red);
-    img = genCircle(img,10,10,100,red);
+    img = genCircle(img,200,200,20,green);
 
     std::string filename = "image.png";
     lodepng::encode(filename, img.source, w, h, LCT_RGB, 8);
