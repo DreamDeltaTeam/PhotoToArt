@@ -31,17 +31,17 @@ public:
     }
 
     void setPixel(int x, int y, Color &c) {
-        int tmp = y*image.rgb*image.w+x*image.rgb;
-        image.source[tmp]=c.r;
-        image.source[tmp+1]=c.g;
-        image.source[tmp+2]=c.b;
+        int tmp = y*rgb*w+x*rgb;
+        source[tmp]=c.r;
+        source[tmp+1]=c.g;
+        source[tmp+2]=c.b;
     }
 
     Color getColor(int x, int y){
-        int tmp = y*image.rgb*image.w+x*image.rgb;
-        int r = image.source[tmp];
-        int g = image.source[tmp]+1;
-        int b = image.source[tmp]+2;
+        int tmp = y*rgb*w+x*rgb;
+        int r = source[tmp];
+        int g = source[tmp]+1;
+        int b = source[tmp]+2;
         return Color(r,g,b);
     }
 };
