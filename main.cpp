@@ -162,6 +162,10 @@ int main()
     std::string filename = "image.png";
     lodepng::encode(filename, img.source, w, h, LCT_RGB, 8);
 
-    std::system(filename.data());
+#ifdef __WIN32__
+    std::system("image.png");
+#else
+    std::system("xviewer /home/timofey/git/build-hello-Desktop_Qt_5_11_0_GCC_64bit-Debug/image.png");
+#endif
     return 0;
 }
