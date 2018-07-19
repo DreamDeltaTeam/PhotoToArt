@@ -6,9 +6,6 @@
 typedef unsigned char byte;
 using namespace std;
 
-//Класс Цвета
-//Class Color
-
 class Color{
 public:
     int r;
@@ -26,8 +23,6 @@ public:
 
 Color RED = Color(255,0,0);
 
-//Класс изображения
-//Image class
 
 class Image{
 public:
@@ -75,7 +70,7 @@ public:
 //Рисование квадрата в координатах x,y; размерами w,h и цветом с
 //Drawing quard in coords x,y; width and height w, h and color c
 
-Image genQuard(Image image,int x,int y, int w,int h,Color c){
+Image genQuard(Image &image,int x,int y, int w,int h,Color c){
     for (int i=0;i<image.h;i++){
         for (int j=0;j<image.w;j++){
            int x1 =j;
@@ -94,7 +89,7 @@ Image genQuard(Image image,int x,int y, int w,int h,Color c){
 //Рисование окружности с центром в координатах x,y , радиуса r и цвета c
 //Drawing circle with center in coords x,y ; radius r and color c
 
-Image genCircle(Image image,int x,int y, int r,Color c){
+Image genCircle(Image &image,int x,int y, int r,Color c){
     if (x>0 && y>0 && x < image.w && y< image.h){
         for (int i=-r;i<r;i++){
             for (int j=-r;j<r;j++){
@@ -117,7 +112,7 @@ Image genCircle(Image image,int x,int y, int r,Color c){
 //Заполнение изображения цветом c
 //Filling image with color с
 
-Image fillImage(Image image, Color c){
+Image fillImage(Image &image, Color c){
     int rgb=3;
     for (int i=0;i<image.h;i++){
         for (int j=0;j<image.w;j++){
