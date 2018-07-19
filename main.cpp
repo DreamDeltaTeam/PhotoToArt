@@ -1,8 +1,9 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <random>
 #include "lodepng.h"
-
+#include <time.h>
 typedef unsigned char byte;
 using namespace std;
 
@@ -125,6 +126,17 @@ Image fillImage(Image &image, Color &c){
     return image;
 }
 
+//Функция генерации случайного числа
+//Function of generation random int
+
+int randInt(int start, int end){
+    std::mt19937 gen;
+    gen.seed(time(0));
+    std::uniform_int_distribution<int> distrib(start, end);
+    return distrib(gen);
+}
+
+
 //Тестирование графических примитивов
 //Testing graphics
 
@@ -138,10 +150,18 @@ int main()
     Color white = Color(255,255,255);
     Color green = Color(0,255,0);
     img = fillImage(img,white);
-    img = genQuard(img,100,100,100,100,RED);
-    img = genCircle(img,200,200,100,green);
+
+
+
+
+
+    img = genQuard(img,randInt(0,w),randInt(0,h),100,100,RED);
+
+//  img = genCircle(img, distrib(gen),10,100,green);
 
     std::string filename = "image.png";
     lodepng::encode(filename, img.source, w, h, LCT_RGB, 8);
+
+    std::system(filename.data());
     return 0;
 }
