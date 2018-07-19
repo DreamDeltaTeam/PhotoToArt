@@ -20,11 +20,12 @@ public:
 
 //Константы цветов
 //Color constants
-
+Color WHITE = Color(255,255,255);
 Color BLACK = Color(0,0,0);
 Color RED = Color(255,0,0);
 Color GREEN = Color(0,255,0);
 Color BLUE = Color(0,0,255);
+Color Yellow = Color(255,255,0)
 
 
 
