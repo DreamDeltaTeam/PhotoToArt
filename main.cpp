@@ -20,11 +20,14 @@ public:
 
 //Константы цветов
 //Color constants
-
+Color WHITE = Color(255,255,255);
 Color BLACK = Color(0,0,0);
 Color RED = Color(255,0,0);
 Color GREEN = Color(0,255,0);
 Color BLUE = Color(0,0,255);
+Color Yellow = Color(255,255,0);
+Color SKYBLUE = Color(0,255,255);
+Color PURPLE = Color(255,0,255);
 
 
 
@@ -75,16 +78,11 @@ public:
 //Drawing quard in coords x,y; width and height w, h and color c
 
 Image genQuard(Image &image,int x,int y, int w,int h,Color c){
-    for (int i=0;i<image.h;i++){
-        for (int j=0;j<image.w;j++){
-           int x1 =j;
-           int y1 = i;
-           if (x1 >=x && y1>=y && x1<=x+w && y1<=y+h){
-               int tmp = y1*image.rgb*image.w+x1*image.rgb;
-               image.source[tmp]=c.r;
-               image.source[tmp+1]=c.g;
-               image.source[tmp+2]=c.b;
-           }
+    for (int i=0;i<h;i++){
+        for (int j=0;j<w;j++){
+           int x1 =j+x;
+           int y1 = i+y;
+           image.setPixel(x1,y1,c);
         }
     }
     return image;
@@ -102,10 +100,7 @@ Image genCircle(Image &image,int x,int y, int r,Color c){
                 if (x1*x1 + y1*y1 <= r*r){
                     x1+=x;
                     y1+=y;
-                    int tmp = y1*image.rgb*image.w+x1*image.rgb;
-                    image.source[tmp]=c.r;
-                    image.source[tmp+1]=c.g;
-                    image.source[tmp+2]=c.b;
+                    image.setPixel(x1,y1,c);
                 }
           }
         }
@@ -122,10 +117,7 @@ Image fillImage(Image &image, Color c){
         for (int j=0;j<image.w;j++){
            int x1 =j;
            int y1 = i;
-           int tmp = y1*rgb*image.w+x1*image.rgb;
-           image.source[tmp]=c.r;
-           image.source[tmp+1]=c.g;
-           image.source[tmp+2]=c.b;
+           image.setPixel(x1,y1,c);
         }
     }
     return image;
