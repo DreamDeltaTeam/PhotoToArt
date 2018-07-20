@@ -6,7 +6,7 @@ CONFIG -= qt
 SOURCES += \
         main.cpp \
         lodepng.cpp \
-        lodepng.h
+        lodepng.h \
+        helpers.cpp \
+        helpers.h \
 
-HEADERS += \
-    main2.h

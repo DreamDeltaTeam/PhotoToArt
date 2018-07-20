@@ -1,4 +1,7 @@
 #include "helpers.h"
+using namespace std;
+#include <iostream>
+
 
 int getError(Image &img1, Image &img2)
 {
@@ -21,10 +24,11 @@ int getError(Image &img1, Image &img2)
 Image put(Image &prev, Mask &mask, Color c, float alpha)
 {
     Image new_image = prev;
-    Hitbox &h = mask.getHitbox();
-    for(int i = h.x1; i < h.x2; i++) {
-        for(int j = h.y1; j < h.y2; j++) {
-            if(mask.getMask(x, y)) {
+    Hitbox &hitbox = mask.getHitbox();
+    for(int i = hitbox.x1; i < hitbox.x2; i++) {
+        for(int j = hitbox.y1; j < hitbox.y2; j++) {
+
+            if(mask.getMask(i, j)) {
                 Color prev_color = prev.getColor(i,j);
                 Color new_color = {(prev_color.r * alpha + c.r * (1-alpha)),
                                    (prev_color.g * alpha + c.g * (1-alpha)),
@@ -47,4 +51,11 @@ Mask genQuad(int x, int y, int side, int w, int h)
         }
     }
     return m;
+}
+
+void Image::setPixel(int x, int y, Color &c) {
+    int tmp = y*rgb*w+x*rgb;
+    source[tmp]=c.r;
+    source[tmp+1]=c.g;
+    source[tmp+2]=c.b;
 }
