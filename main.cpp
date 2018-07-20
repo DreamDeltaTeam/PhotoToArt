@@ -19,6 +19,14 @@ public:
     }
 };
 
+class Polygon{
+public:
+    std::vector<int> data;
+    Polygon(vector<int> data){
+        this->data = data;
+    }
+};
+
 //Константы цветов
 //Color constants
 Color WHITE = Color(255,255,255);
@@ -126,6 +134,52 @@ Image fillImage(Image &image, Color &c){
     return image;
 }
 
+Image fillPolygon(Image &image, Color &c, Polygon &p){
+    int minX = INT_MAX;
+    for (int i=0;i<p.data.size(); i+=2){
+        if (p.data[i]<minX) minX = p.data[i];
+    }
+    int minY = INT_MAX;
+    for (int i=0;i<p.data.size(); i+=2){
+        if (p.data[i]<minY) minY = p.data[i];
+    }
+    int maxX = INT_MIN;
+    for (int i=0;i<p.data.size(); i+=2){
+        if (p.data[i]>maxX) maxX = p.data[i];
+    }
+    int maxY = INT_MIN;
+    for (int i=0;i<p.data.size(); i+=2){
+        if (p.data[i]>maxY) maxY = p.data[i];
+    }
+    bool inside = false;
+    for (int i=minY; i<=maxY; i++){
+        for (int j=minX; j<maxX;j++){
+            for (int l=0;l<p.data.size()-4;l++){
+                int x1=p.data[l];
+                int y1=p.data[l+1];
+                int x2=p.data[l+2];
+                int y2=p.data[l+3];
+
+
+                int a=(y1-y2) / (x1-x2);
+                int b=y2-x2*(y1-y2)/(x1-x2);
+
+                if (i==j*a+b){
+                    inside=!inside;
+                    break;
+                }
+            }
+
+            if (inside){
+                image.setPixel(i,j,c);
+            }
+        }
+    }
+
+    return image;
+
+}
+
 //Функция генерации случайного числа
 //Function of generation random int
 
@@ -156,6 +210,9 @@ int main()
 
 
     img = genQuard(img,randInt(0,w),randInt(0,h),100,100,RED);
+    vector<int> z = {1,1,100,1,200,200};
+    Polygon p1 = Polygon(z);
+    img = fillPolygon(img,RED,p1);
 
 //  img = genCircle(img, distrib(gen),10,100,green);
 
