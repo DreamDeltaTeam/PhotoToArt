@@ -74,11 +74,20 @@ Image fillImage(Image &image, Color &c){
 //Функция генерации случайного числа
 //Function of generation random int
 
-int randInt(float mu, float sigma2){
+int clamp(int x, int left, int right)
+{
+    if(x < left) return left;
+    if(x > right) return right;
+
+    return x;
+}
+
+int randInt(float mu, float sigma2,int start, int end){
     std::mt19937 gen;
     gen.seed(time(0));
     std::normal_distribution<float> distrib(mu, sigma2);
-    return int(distrib(gen));
+    int rez = int(distrib(gen));
+    return clamp(rez, start, end);
 }
 
 
@@ -95,8 +104,15 @@ int main()
     Color white = Color(255,255,255);
     Color green = Color(0,255,0);
     img = fillImage(img,white);
-    Mask quard = genQuad(100,100,10,w,h);
-    img = put(img,quard,RED,1);
+
+    vector<Mask> masks;
+    masks.resize(100);
+    for (int i=0;i<100;i++){
+        masks[i] = genQuad(randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h),10,w,h);
+        Color c = new Color(randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255));
+        img = put(img,masks[i],c,1);
+    }
+
 
 
     std::string filename = "image.png";
