@@ -1,8 +1,9 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <random>
 #include "lodepng.h"
-
+#include <time.h>
 typedef unsigned char byte;
 using namespace std;
 
@@ -18,13 +19,24 @@ public:
     }
 };
 
+class Polygon{
+public:
+    std::vector<int> data;
+    Polygon(vector<int> data){
+        this->data = data;
+    }
+};
+
 //Константы цветов
 //Color constants
-
+Color WHITE = Color(255,255,255);
 Color BLACK = Color(0,0,0);
 Color RED = Color(255,0,0);
 Color GREEN = Color(0,255,0);
 Color BLUE = Color(0,0,255);
+Color Yellow = Color(255,255,0);
+Color SKYBLUE = Color(0,255,255);
+Color PURPLE = Color(255,0,255);
 
 
 
@@ -74,17 +86,12 @@ public:
 //Рисование квадрата в координатах x,y; размерами w,h и цветом с
 //Drawing quard in coords x,y; width and height w, h and color c
 
-Image genQuard(Image &image,int x,int y, int w,int h,Color c){
-    for (int i=0;i<image.h;i++){
-        for (int j=0;j<image.w;j++){
-           int x1 =j;
-           int y1 = i;
-           if (x1 >=x && y1>=y && x1<=x+w && y1<=y+h){
-               int tmp = y1*image.rgb*image.w+x1*image.rgb;
-               image.source[tmp]=c.r;
-               image.source[tmp+1]=c.g;
-               image.source[tmp+2]=c.b;
-           }
+Image genQuard(Image &image,int x,int y, int w,int h,Color &c){
+    for (int i=0;i<h;i++){
+        for (int j=0;j<w;j++){
+           int x1 =j+x;
+           int y1 = i+y;
+           image.setPixel(x1,y1,c);
         }
     }
     return image;
@@ -93,7 +100,7 @@ Image genQuard(Image &image,int x,int y, int w,int h,Color c){
 //Рисование окружности с центром в координатах x,y , радиуса r и цвета c
 //Drawing circle with center in coords x,y ; radius r and color c
 
-Image genCircle(Image &image,int x,int y, int r,Color c){
+Image genCircle(Image &image,int x,int y, int r,Color &c){
     if (x>0 && y>0 && x < image.w && y< image.h){
         for (int i=-r;i<r;i++){
             for (int j=-r;j<r;j++){
@@ -102,10 +109,7 @@ Image genCircle(Image &image,int x,int y, int r,Color c){
                 if (x1*x1 + y1*y1 <= r*r){
                     x1+=x;
                     y1+=y;
-                    int tmp = y1*image.rgb*image.w+x1*image.rgb;
-                    image.source[tmp]=c.r;
-                    image.source[tmp+1]=c.g;
-                    image.source[tmp+2]=c.b;
+                    image.setPixel(x1,y1,c);
                 }
           }
         }
@@ -113,23 +117,79 @@ Image genCircle(Image &image,int x,int y, int r,Color c){
     return image;
 }
 
+
+
 //Заполнение изображения цветом c
 //Filling image with color с
 
-Image fillImage(Image &image, Color c){
+Image fillImage(Image &image, Color &c){
     int rgb=3;
     for (int i=0;i<image.h;i++){
         for (int j=0;j<image.w;j++){
            int x1 =j;
            int y1 = i;
-           int tmp = y1*rgb*image.w+x1*image.rgb;
-           image.source[tmp]=c.r;
-           image.source[tmp+1]=c.g;
-           image.source[tmp+2]=c.b;
+           image.setPixel(x1,y1,c);
         }
     }
     return image;
 }
+
+Image fillPolygon(Image &image, Color &c, Polygon &p){
+    int minX = INT_MAX;
+    for (int i=0;i<p.data.size(); i+=2){
+        if (p.data[i]<minX) minX = p.data[i];
+    }
+    int minY = INT_MAX;
+    for (int i=0;i<p.data.size(); i+=2){
+        if (p.data[i]<minY) minY = p.data[i];
+    }
+    int maxX = INT_MIN;
+    for (int i=0;i<p.data.size(); i+=2){
+        if (p.data[i]>maxX) maxX = p.data[i];
+    }
+    int maxY = INT_MIN;
+    for (int i=0;i<p.data.size(); i+=2){
+        if (p.data[i]>maxY) maxY = p.data[i];
+    }
+    bool inside = false;
+    for (int i=minY; i<=maxY; i++){
+        for (int j=minX; j<maxX;j++){
+            for (int l=0;l<p.data.size()-4;l++){
+                int x1=p.data[l];
+                int y1=p.data[l+1];
+                int x2=p.data[l+2];
+                int y2=p.data[l+3];
+
+
+                int a=(y1-y2) / (x1-x2);
+                int b=y2-x2*(y1-y2)/(x1-x2);
+
+                if (i==j*a+b){
+                    inside=!inside;
+                    break;
+                }
+            }
+
+            if (inside){
+                image.setPixel(i,j,c);
+            }
+        }
+    }
+
+    return image;
+
+}
+
+//Функция генерации случайного числа
+//Function of generation random int
+
+int randInt(int start, int end){
+    std::mt19937 gen;
+    gen.seed(time(0));
+    std::uniform_int_distribution<int> distrib(start, end);
+    return distrib(gen);
+}
+
 
 //Тестирование графических примитивов
 //Testing graphics
@@ -144,10 +204,25 @@ int main()
     Color white = Color(255,255,255);
     Color green = Color(0,255,0);
     img = fillImage(img,white);
-    img = genQuard(img,100,100,100,100,RED);
-    img = genCircle(img,200,200,20,green);
+
+
+
+
+
+    img = genQuard(img,randInt(0,w),randInt(0,h),100,100,RED);
+    vector<int> z = {1,1,100,1,200,200};
+    Polygon p1 = Polygon(z);
+    img = fillPolygon(img,RED,p1);
+
+//  img = genCircle(img, distrib(gen),10,100,green);
 
     std::string filename = "image.png";
     lodepng::encode(filename, img.source, w, h, LCT_RGB, 8);
+
+#ifdef __WIN32__
+    std::system("image.png");
+#else
+    std::system("xviewer /home/timofey/git/build-hello-Desktop_Qt_5_11_0_GCC_64bit-Debug/image.png");
+#endif
     return 0;
 }
