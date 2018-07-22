@@ -9,4 +9,6 @@ SOURCES += \
         lodepng.h \
         helpers.cpp \
         helpers.h \
+        image.cpp \
+        image.h
 

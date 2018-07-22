@@ -5,6 +5,7 @@
 #include "lodepng.h"
 #include <time.h>
 #include "helpers.h"
+#include "image.h"
 typedef unsigned char byte;
 using namespace std;
 
@@ -36,25 +37,7 @@ Image genQuard(Image &image,int x,int y, int w,int h,Color &c){
     return image;
 }
 
-//Рисование окружности с центром в координатах x,y , радиуса r и цвета c
-//Drawing circle with center in coords x,y ; radius r and color c
 
-Image genCircle(Image &image,int x,int y, int r,Color &c){
-    if (x>0 && y>0 && x < image.w && y< image.h){
-        for (int i=-r;i<r;i++){
-            for (int j=-r;j<r;j++){
-                int x1 =j;
-                int y1 = i;
-                if (x1*x1 + y1*y1 <= r*r){
-                    x1+=x;
-                    y1+=y;
-                    image.setPixel(x1,y1,c);
-                }
-          }
-        }
-    }
-    return image;
-}
 
 
 
@@ -63,8 +46,8 @@ Image genCircle(Image &image,int x,int y, int r,Color &c){
 
 Image fillImage(Image &image, Color &c){
     int rgb=3;
-    for (int i=0;i<image.h;i++){
-        for (int j=0;j<image.w;j++){
+    for (int i=0;i<image.getHeight();i++){
+        for (int j=0;j<image.getWidth();j++){
            int x1 =j;
            int y1 = i;
            image.setPixel(x1,y1,c);
@@ -109,18 +92,17 @@ int main()
 
     vector<Mask> masks;
 
-    for (int i=0;i<500;i++){
+    for (int i=0;i<50;i++){
         Mask cur_mask = genQuad(randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h),10,w,h);
-        masks.push_back(cur_mask);
-        Color c(randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255));
-        img = put(img,masks[i],c,1);
+        Color c= Color(randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255));
+        //Color c = Color(255,0,0);
+        img = put(img,cur_mask,c,0);
     }
 
 
 
     std::string filename = "image.png";
-    lodepng::encode(filename, img.source, w, h, LCT_RGB, 8);
-
+    img.Save(filename);
 #ifdef __WIN32__
     std::system("image.png");
 #else
