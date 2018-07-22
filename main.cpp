@@ -88,24 +88,24 @@ int main()
     Color red = Color(255,0,0);
     Color white = Color(255,255,255);
     Color green = Color(0,255,0);
-    img = fillImage(img,white);
+    img = fillImage(img,BLACK);
     bool newImage = true;
-    int images = 15;
+    int images = 100;
     int changex = 1;
     int changey = 1;
-    int zaderzka = 10;
-    string linux1 = "convert -delay "+ to_string(zaderzka) +" -loop 0 ";
+    int delay = 10;
+    string linux1 = "convert -delay "+ to_string(delay) +" -loop 0 ";
 
 
 
     for(int g = 0;g<images;g){
-
+        img = fillImage(img,BLACK);
     vector<Mask> masks;
 
     for (int i=0;i<50;i++){
         Mask cur_mask = genQuad(randInt(w/2+changex,w/10+changey,0,w),randInt(h/2,h/10,0,h),10,w,h);
         masks.push_back(cur_mask);
-        Color c = Color(randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255));
+        Color c = Color(randInt(w/2,w/9,0,255),randInt(w/2,w/9,0,255),randInt(w/2,w/9,0,255));
         img = put(img,cur_mask,c,0);
     }
 
@@ -125,10 +125,11 @@ linux1 = linux1 + filename+ " ";
 }
 
 linux1 = linux1 + " gif5.gif";
-
+std::string windows = "cmd /c convert -delay "+to_string(delay)+" -loop 0 *.png anim.gif";
 #ifdef __WIN32__
-//std::system(linux1.data());
-std::system(gif5.gif");
+std::system(windows.data());
+std::system("convert -quality 100 *.png outputfile.mpeg");
+std::system("anim.gif");
 #else
     cout << linux1.data() << endl;
     std::system("cd /home/timofey/git/build-hello-Desktop_Qt_5_11_0_GCC_64bit-Debug/");
