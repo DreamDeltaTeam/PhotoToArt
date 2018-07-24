@@ -49,9 +49,9 @@ Point mutate_dot(Point p, int side,float mu,float sigma2,int w,int h)
     int x = randInt(mu,sigma2,p.x-side,p.x+side);
     int y = randInt(mu,sigma2,p.y-side, p.y+side);
     if (x<0) x=0;
-    if (x>w) x=w;
+    if (x>w) x=w-1;
     if (y<0) y=0;
-    if (y>h) y=h;
+    if (y>h) y=h-1;
     return {x,y};
 }
 
@@ -70,19 +70,19 @@ vector<Point> rotate_vector(Point p, float mu, float sigma2, vector<Point> data,
     return data;
 }
 
-std::vector<Point>move_vector (Point point_from, Point point_to, vector<Point>data){
-    int dx=point_from.x-point_to.x;
-    int dy=point_from.y-point_to.y;
-    for(int i=1;i<data.size();i++){
+vector<Point>move_vector (Point point_from, Point point_to, vector<Point>data){
+    int dx=abs(point_from.x-point_to.x);
+    int dy=abs(point_from.y-point_to.y);
+    for(int i=0;i<=data.size();i++){
         data[i].x+=dx;
         data[i].y+=dy;
-        return data;
     }
+    return data;
 }
 
 vector<Point> mutate_polygon(vector<Point> &data,int w,int h){
-    int side = 10;
-    int mu = w/2;
+    int side = 5;
+    int mu = w/10;
     int sigma2=w/100;
     Point mutated_dot = mutate_dot(Point(data[0].x,data[0].y),side,mu,sigma2, w,h);
     data = move_vector(mutated_dot, Point(data[0].x,data[0].y),data);
@@ -138,20 +138,29 @@ int main()
     Color green = Color(0,255,0);
     img = fillImage(img,BLACK);
     bool newImage = true;
-    int images = 100;
-    int changex = 1;
-    int changey = 1;
-    int delay = 10;
+    int images = 3;
+    int delay = 25;
     string linux1 = "convert -delay "+ to_string(delay) +" -loop 0 ";
 
 
+    /*vector<Point> polygon = {
+        {randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h)},
+        {randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h)},
+        {randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h)},
+        {randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h)},
+        {randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h)},
+        {randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h)}
+    };*/
+
+    int scale = 10;
+    int dx = 1;
+    int dy = 1;
     vector<Point> polygon = {
-        {randInt(w/2+changex,w/10+changey,0,w),randInt(h/2,h/10,0,h)},
-        {randInt(w/2+changex,w/10+changey,0,w),randInt(h/2,h/10,0,h)},
-        {randInt(w/2+changex,w/10+changey,0,w),randInt(h/2,h/10,0,h)},
-        {randInt(w/2+changex,w/10+changey,0,w),randInt(h/2,h/10,0,h)},
-        {randInt(w/2+changex,w/10+changey,0,w),randInt(h/2,h/10,0,h)},
-        {randInt(w/2+changex,w/10+changey,0,w),randInt(h/2,h/10,0,h)}
+        {(2+dx)*scale,(6+dy)*scale},
+        {(5+dx)*scale,(4+dy)*scale},
+        {(5+dx)*scale,(1+dy)*scale},
+        {(2+dx)*scale,(0+dy)*scale},
+        {(0+dx)*scale,(4+dy)*scale}
     };
     for(int g = 0;g<images;g){
         img = fillImage(img,BLACK);
@@ -160,7 +169,7 @@ int main()
 
         Mask cur_mask = makePolygon(polygon,w,h);
         masks.push_back(cur_mask);
-        Color c = Color(randInt(w/2,w/20,0,255),randInt(w/2,w/20,0,255),randInt(w/2,w/20,0,255));
+        Color c = Color(randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255));
         img = put(img,cur_mask,c,0);
 
         polygon=mutate_polygon(polygon,w,h);
@@ -174,9 +183,9 @@ int main()
     linux1 = linux1 + filename+ " ";
     cout <<"image"+ to_string(g)+".png" << endl;
      g++;
-    if(newImage == true){
+    /*if(newImage == true){
     img = fillImage(img,white);
-    }
+    }*/
 
 
 }
