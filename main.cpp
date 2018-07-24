@@ -2,12 +2,16 @@
 #include <vector>
 #include <string>
 #include <random>
-#include "lodepng.h"
+#include <iomanip>
+#include <cmath>
 #include <time.h>
+#include <sstream>
+
+#include "lodepng.h"
+
 #include "helpers.h"
 #include "image.h"
 #include "mask.h"
-#include <cmath>
 typedef unsigned char byte;
 using namespace std;
 
@@ -55,11 +59,24 @@ Point mutate_dot(Point p, int side,float mu,float sigma2,int w,int h)
     return {x,y};
 }
 
-vector<Point> rotate_vector(Point p, float mu, float sigma2, vector<Point> data,int w,int h){
+Point mass_center(const Polygon &p){
+    int x=0;
+    int y=0;
+    for (const Point &i : p){
+        x+=i.x;
+        y+=i.y;
+    }
+    return {x/p.size(), y/p.size()};
+}
+
+vector<Point> rotate_polygon(Point p, float mu, float sigma2, vector<Point> data,int w,int h){
     int alpha = randInt(mu,sigma2,0,360);
     for(int i = 0; i < data.size();i++){
-        int x = (data[i].x+p.x)*cos(alpha)-(data[i].y+p.y)*sin(alpha);
-        int y = (data[i].x+p.x)*sin(alpha)+(data[i].y+p.y)*cos(alpha);
+        int x = (data[i].x-p.x)*cos(alpha)-(data[i].y-p.y)*sin(alpha);
+        int y = (data[i].x-p.x)*sin(alpha)+(data[i].y-p.y)*cos(alpha);
+
+        x += p.x;
+        y += p.y;
         if (x<0) x=0;
         if (x>w) x=w;
         if (y<0) y=0;
@@ -70,7 +87,7 @@ vector<Point> rotate_vector(Point p, float mu, float sigma2, vector<Point> data,
     return data;
 }
 
-vector<Point>move_vector (Point point_from, Point point_to, vector<Point>data){
+vector<Point>move_polygon (Point point_from, Point point_to, vector<Point>data){
     int dx=abs(point_from.x-point_to.x);
     int dy=abs(point_from.y-point_to.y);
     for(int i=0;i<=data.size();i++){
@@ -80,13 +97,13 @@ vector<Point>move_vector (Point point_from, Point point_to, vector<Point>data){
     return data;
 }
 
-vector<Point> mutate_polygon(vector<Point> &data,int w,int h){
+vector<Point> mutate_polygon(Polygon &data,int w,int h){
     int side = 5;
     int mu = w/10;
     int sigma2=w/100;
     Point mutated_dot = mutate_dot(Point(data[0].x,data[0].y),side,mu,sigma2, w,h);
-    data = move_vector(mutated_dot, Point(data[0].x,data[0].y),data);
-   // data = rotate_vector(Point(data[0].x,data[0].y),mu,sigma2,data,w,h);
+    data = move_polygon(mutated_dot, Point(data[0].x,data[0].y),data);
+    data = rotate_polygon(mass_center(data),mu,sigma2,data,w,h);
     return data;
 }
 
@@ -138,7 +155,7 @@ int main()
     Color green = Color(0,255,0);
     img = fillImage(img,BLACK);
     bool newImage = true;
-    int images = 3;
+    int images = 100;
     int delay = 25;
     string linux1 = "convert -delay "+ to_string(delay) +" -loop 0 ";
 
@@ -162,10 +179,12 @@ int main()
         {(2+dx)*scale,(0+dy)*scale},
         {(0+dx)*scale,(4+dy)*scale}
     };
-    for(int g = 0;g<images;g){
-        img = fillImage(img,BLACK);
-    vector<Mask> masks;
 
+
+    for(int g = 0;g<images;g++){
+        img = fillImage(img,BLACK);
+
+        vector<Mask> masks;
 
         Mask cur_mask = makePolygon(polygon,w,h);
         masks.push_back(cur_mask);
@@ -174,23 +193,23 @@ int main()
 
         polygon=mutate_polygon(polygon,w,h);
 
+        std::stringstream ss;
+
+        ss << "image";
+        ss << std::setfill('0') << std::setw(3) << g;
+        ss << ".png";
+        std::string filename = ss.str();//"image" + to_string(g) + ".png";
+        img.Save(filename);
+
+        linux1 = linux1 + filename+ " ";
+        cout << filename << endl;
 
 
-
-    std::string filename = "image" + to_string(g) + ".png";
-    img.Save(filename);
-
-    linux1 = linux1 + filename+ " ";
-    cout <<"image"+ to_string(g)+".png" << endl;
-     g++;
-    /*if(newImage == true){
-    img = fillImage(img,white);
-    }*/
-
-
-}
+    }
 
 linux1 = linux1 + " gif5.gif";
+
+
 std::string windows = "cmd /c convert -delay "+to_string(delay)+" -loop 0 *.png anim.gif";
 #ifdef __WIN32__
 std::system(windows.data());

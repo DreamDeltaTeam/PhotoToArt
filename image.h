@@ -47,6 +47,8 @@ struct Point
     }
 };
 
+typedef vector<Point> Polygon;
+
 class Image
 {
 public:
