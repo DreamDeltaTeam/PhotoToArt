@@ -1,29 +1,28 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
+#include <iostream>
 #include "lodepng.h"
+#include <string>
 #include <vector>
+#include <fstream>
 
-typedef unsigned char uchar;
+typedef unsigned char byte;
+using namespace std;
 
-
-template<typename T>
-T clamp(T x, T min_val, T max_val)
+class Color
 {
-    if(x < min_val) return min_val;
-    if(x > max_val) return max_val;
-    return x;
-}
-
-typedef unsigned char uchar;
-
-struct Color
-{
-    uchar r,g,b;
-    Color(uchar r,uchar g,uchar b){
-        this->r=r;
-        this->g=g;
-        this->b=b;
+public:
+    byte r;
+    byte g;
+    byte b;
+    Color(){
+    }
+    Color(byte r, byte g, byte b)
+    {
+        this->r = r;
+        this->g = g;
+        this->b = b;
     }
 };
 
@@ -37,66 +36,74 @@ struct Point
         if (y < 0) y = 0;
         if (y >= h) y = h-1;
     }
-    Point(int x,int y){
+
+    Point(){
+        x=0;
+        y=0;
+    }
+    Point (int x,int y){
         this->x=x;
         this->y=y;
     }
 };
 
-template<typename T>
-class Array3D
-{
-protected:
-    int width, height;
-    int num_channels;
-    std::vector<T> values;
-public:
-    Array3D();
-    Array3D(int width, int height, int num_channels);
-    Array3D(const Array3D<T> &other);
-
-    int getWidth() { return width; }
-    int getHeight() { return height; }
-    int getNumChannels() { return num_channels; }
-
-    T& operator() (int y, int x, int ch = 0);
-    T& at(int y, int x, int ch);
-    T value_at(int y, int x, int ch) const;
-};
-
-class Image : public Array3D<uchar>
+class Image
 {
 public:
-    Image();
-    Image(int width, int height, int num_channels);
-    Image(const std::string &filename);
-    Image(const Image &other) : Array3D<uchar>(other) {}
+    unsigned int width;
+    unsigned int height;
+    unsigned int channels;
+    std::vector<byte> data;
+	
+    Image(int w, int h, int chnl)
+    {
+        width = w;
+        height = h;
+        channels = chnl;
 
-    void Resize(int new_width, int new_height);
-    void Save(const std::string &save_path);
-    void setPixel(int x, int y, Color c);
-    Color getPixel(int x, int y) const;
-};
-
-class Mask : public Array3D<int>
-{
-public:
-    Mask();
-    Mask(int width, int height);
-    Mask(const Mask &other) : Array3D<int>(other) {}
-
-    int getPixel(int x, int y) {
-        return at(y, x, 0);
+        data.resize(width * height * channels);
     }
+	
+    Image (const Image &img){
+        width=img.width;
+        height=img.height;
+        channels=img.channels;
+        data=img.data;
+    }
+
+    Image(const string &name)
+    {
+        lodepng::decode(data,width,height,name,LCT_RGB,8);
+        channels=3;
+    }
+
+    Color getPixel(int x, int y) const
+    {
+        Color c;
+        c.r = data[y * width * channels + x * channels];
+        c.g = data[y * width * channels + x * channels + 1];
+        c.b = data[y * width * channels + x * channels + 2];
+
+
+        return c;
+    }
+
+    void setPixel(int x, int y, Color c)
+    {
+        data[y * width * channels + x * channels]=c.r;
+        data[y * width * channels + x * channels + 1]=c.g;
+        data[y * width * channels + x * channels + 2]=c.b;
+    }
+
+    void Save(const string &name){
+        lodepng::encode(name,data,width,height,LCT_RGB,8);
+    }
+    unsigned int getWidth() const;
+    unsigned int getHeight() const;
 };
 
-class IntegralImage : public Array3D<double>
-{
-public:
-    IntegralImage(Image &other);
-    Color avgColor(Point p1, Point p2);
-};
 
-Image rgb2gray(Image &rgb);
+unsigned int getError(const Image &img1, const Image &img2);
+
 
 #endif // IMAGE_H

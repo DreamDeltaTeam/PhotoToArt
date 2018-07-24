@@ -1,7 +1,4 @@
 #include "helpers.h"
-#include "image.h"
-using namespace std;
-#include <iostream>
 
 
 int getError(Image &img1, Image &img2)
@@ -40,15 +37,6 @@ Image put(Image &prev, Mask &mask, Color c, float alpha)
     return new_image;
 }
 
-Mask genQuad(int x, int y, int side, int w, int h)
-{
-    Mask m(w, h);
-    for(int i = x; i < x + side; i++) {
-        for(int j = y; j < y + side; j++) {
-            m.at(j,i,0) = 1;
-            //std::cout << i << " " << j << endl;
-        }
-    }
-    return m;
-}
+
+
 

@@ -3,6 +3,8 @@
 
 #include <vector>
 #include "image.h"
+#include "mask.h"
+#include <iostream>
 
 typedef unsigned char byte;
 using namespace std;
@@ -15,14 +17,13 @@ struct Hitbox
 };
 
 
+
 /* Функция ошибок для алгоритма */
 int getError(Image &img1, Image &img2);
 
 /* Функция, закрашивающая по битовой маске область на картинке */
 Image put(Image &prev, Mask &mask, Color c, float alpha);
 
-/* Функция, которая генерирует битовую маску для квадрата */
-Mask genQuad(int x, int y, int side, int w, int h);
 
 /*======== Внутренниие вспомогательные функции =========*/
 /* Это использовать не нужно! */

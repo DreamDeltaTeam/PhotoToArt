@@ -10,5 +10,9 @@ SOURCES += \
         helpers.cpp \
         helpers.h \
         image.cpp \
-        image.h
+        image.h \
+        mask.h \
+        mask.cpp
+
+HEADERS +=
 
