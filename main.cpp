@@ -40,6 +40,14 @@ int clamp(int x, int left, int right)
     return x;
 }
 
+double d_clamp(double x, double left, double right)
+{
+    if(x < left) return left;
+    if(x > right) return right;
+
+    return x;
+}
+
 int randInt(float mu, float sigma2,int start, int end)
 {
     std::normal_distribution<float> distrib(mu, sigma2);
@@ -47,15 +55,22 @@ int randInt(float mu, float sigma2,int start, int end)
     return clamp(rez, start, end);
 }
 
+int randDouble(float mu, float sigma2,double start, double end)
+{
+    std::normal_distribution<double> distrib(mu, sigma2);
+    double rez = distrib(gen);
+    return d_clamp(rez, start, end);
+}
+
 
 Point mutate_dot(Point p, int side,float mu,float sigma2,int w,int h)
 {
-    int x = randInt(mu,sigma2,p.x-side,p.x+side);
-    int y = randInt(mu,sigma2,p.y-side, p.y+side);
-    if (x<0) x=0;
-    if (x>w) x=w-1;
-    if (y<0) y=0;
-    if (y>h) y=h-1;
+    double x = randDouble(mu,sigma2,p.x-side,p.x+side);
+    double y = randDouble(mu,sigma2,p.y-side, p.y+side);
+
+    x = d_clamp(x,0,w-1);
+    y = d_clamp(y,0,h-1);
+
     return {x,y};
 }
 
@@ -72,8 +87,8 @@ Point mass_center(const Polygon &p){
 vector<Point> rotate_polygon(Point p, float mu, float sigma2, vector<Point> data,int w,int h){
     int alpha = randInt(mu,sigma2,0,360);
     for(int i = 0; i < data.size();i++){
-        int x = (data[i].x-p.x)*cos(alpha)-(data[i].y-p.y)*sin(alpha);
-        int y = (data[i].x-p.x)*sin(alpha)+(data[i].y-p.y)*cos(alpha);
+        double x = (data[i].x-p.x)*cos(alpha)-(data[i].y-p.y)*sin(alpha);
+        double y = (data[i].x-p.x)*sin(alpha)+(data[i].y-p.y)*cos(alpha);
 
         x += p.x;
         y += p.y;
@@ -81,15 +96,19 @@ vector<Point> rotate_polygon(Point p, float mu, float sigma2, vector<Point> data
         if (x>w) x=w;
         if (y<0) y=0;
         if (y>h) y=h;
-        data[i].x = x;
-        data[i].y = y;
+
+        x= d_clamp(x,0,w-1);
+        y = d_clamp(y,0,h-1);
+
+        data[i].x = (int)x;
+        data[i].y = (int)y;
     }
     return data;
 }
 
 vector<Point>move_polygon (Point point_from, Point point_to, vector<Point>data){
-    int dx=abs(point_from.x-point_to.x);
-    int dy=abs(point_from.y-point_to.y);
+    double dx=abs(point_from.x-point_to.x);
+    double dy=abs(point_from.y-point_to.y);
     for(int i=0;i<=data.size();i++){
         data[i].x+=dx;
         data[i].y+=dy;
@@ -160,19 +179,19 @@ int main()
     string linux1 = "convert -delay "+ to_string(delay) +" -loop 0 ";
 
 
-    /*vector<Point> polygon = {
+    vector<Point> polygon = {
         {randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h)},
         {randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h)},
         {randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h)},
         {randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h)},
         {randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h)},
         {randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h)}
-    };*/
+    };
 
     int scale = 10;
     int dx = 1;
     int dy = 1;
-    vector<Point> polygon = {
+    vector<Point> polygon2 = {
         {(2+dx)*scale,(6+dy)*scale},
         {(5+dx)*scale,(4+dy)*scale},
         {(5+dx)*scale,(1+dy)*scale},
@@ -181,17 +200,18 @@ int main()
     };
 
 
+
     for(int g = 0;g<images;g++){
         img = fillImage(img,BLACK);
 
         vector<Mask> masks;
 
-        Mask cur_mask = makePolygon(polygon,w,h);
+        Mask cur_mask = makePolygon(polygon2,w,h);
         masks.push_back(cur_mask);
         Color c = Color(randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255));
         img = put(img,cur_mask,c,0);
 
-        polygon=mutate_polygon(polygon,w,h);
+        polygon2=mutate_polygon(polygon2,w,h);
 
         std::stringstream ss;
 

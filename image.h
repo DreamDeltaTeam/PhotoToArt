@@ -28,7 +28,7 @@ public:
 
 struct Point
 {
-    int x, y;
+    double x, y;
     void clamp(int w, int h)
     {
         if (x < 0) x = 0;
@@ -41,7 +41,7 @@ struct Point
         x=0;
         y=0;
     }
-    Point (int x,int y){
+    Point (double x,double y){
         this->x=x;
         this->y=y;
     }
