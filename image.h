@@ -29,6 +29,7 @@ public:
 struct Point
 {
     double x, y;
+
     void clamp(int w, int h)
     {
         if (x < 0) x = 0;
@@ -41,10 +42,9 @@ struct Point
         x=0;
         y=0;
     }
-    Point (double x,double y){
-        this->x=x;
-        this->y=y;
-    }
+    Point (double x,double y) :
+        x(x), y(y)
+    {}
 };
 
 typedef vector<Point> Polygon;
@@ -98,6 +98,7 @@ public:
     }
 
     void Save(const string &name){
+        std::cout << data.size() << " " << width * height * 3 << std::endl;
         lodepng::encode(name,data,width,height,LCT_RGB,8);
     }
     unsigned int getWidth() const;
