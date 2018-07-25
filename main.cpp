@@ -84,46 +84,49 @@ Point mass_center(const Polygon &p){
     return {x/p.size(), y/p.size()};
 }
 
-vector<Point> rotate_polygon(Point p, float mu, float sigma2, vector<Point> data,int w,int h){
+vector<Point> rotate_polygon(Point p, float mu, float sigma2, const vector<Point> &data,int w,int h){
     int alpha = randInt(mu,sigma2,0,360);
+    Polygon tmp = data;
     for(int i = 0; i < data.size();i++){
         double x = (data[i].x-p.x)*cos(alpha)-(data[i].y-p.y)*sin(alpha);
         double y = (data[i].x-p.x)*sin(alpha)+(data[i].y-p.y)*cos(alpha);
 
         x += p.x;
         y += p.y;
-        if (x<0) x=0;
-        if (x>w) x=w;
-        if (y<0) y=0;
-        if (y>h) y=h;
 
         x= d_clamp(x,0,w-1);
         y = d_clamp(y,0,h-1);
 
-        data[i].x = (int)x;
-        data[i].y = (int)y;
+        tmp[i].x = (int)x;
+        tmp[i].y = (int)y;
     }
-    return data;
+    return tmp;
 }
 
-vector<Point>move_polygon (Point point_from, Point point_to, vector<Point>data){
+vector<Point> move_polygon (Point point_from, Point point_to, const vector<Point> &data,int w,int h){
+    Polygon tmp = data;
+
     double dx=abs(point_from.x-point_to.x);
     double dy=abs(point_from.y-point_to.y);
     for(int i=0;i<=data.size();i++){
-        data[i].x+=dx;
-        data[i].y+=dy;
+        tmp[i].x+=dx;
+        tmp[i].y+=dy;
+        tmp[i].x = d_clamp(data[i].x,0,w-1);
+        tmp[i].y = d_clamp(data[i].y,0,h-1);
     }
-    return data;
+
+    return tmp;
 }
 
-vector<Point> mutate_polygon(Polygon &data,int w,int h){
+vector<Point> mutate_polygon(const Polygon &data,int w,int h){
+    Polygon tmp;
     int side = 5;
     int mu = w/10;
     int sigma2=w/100;
     Point mutated_dot = mutate_dot(Point(data[0].x,data[0].y),side,mu,sigma2, w,h);
-    data = move_polygon(mutated_dot, Point(data[0].x,data[0].y),data);
-    data = rotate_polygon(mass_center(data),mu,sigma2,data,w,h);
-    return data;
+    tmp = move_polygon(mutated_dot, Point(data[0].x,data[0].y),data,w,h);
+    tmp = rotate_polygon(mass_center(data),mu,sigma2,data,w,h);
+    return tmp;
 }
 
 //Рисование квадрата в координатах x,y; размерами w,h и цветом с
@@ -204,10 +207,7 @@ int main()
     for(int g = 0;g<images;g++){
         img = fillImage(img,BLACK);
 
-        vector<Mask> masks;
-
         Mask cur_mask = makePolygon(polygon2,w,h);
-        masks.push_back(cur_mask);
         Color c = Color(randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255));
         img = put(img,cur_mask,c,0);
 
