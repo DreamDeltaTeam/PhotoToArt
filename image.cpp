@@ -14,6 +14,43 @@ unsigned int getError(const Image &img1, const Image &img2){
     }
     return help;
 }
+
+double maxX(Polygon p){
+    double max = std::numeric_limits<double>::min();
+
+    for (Point point : p){
+        if (point.x>max) max = point.x;
+    }
+    return max;
+}
+
+double maxY(Polygon p){
+    double max = std::numeric_limits<double>::min();
+
+    for (Point point : p){
+        if (point.y>max) max = point.y;
+    }
+    return max;
+}
+
+double minX(Polygon p){
+    double max = std::numeric_limits<double>::max();
+
+    for (Point point : p){
+        if (point.x<max) max = point.x;
+    }
+    return max;
+}
+
+double minY(Polygon p){
+    double max = std::numeric_limits<double>::max();
+
+    for (Point point : p){
+        if (point.y<max) max = point.y;
+    }
+    return max;
+}
+
 unsigned int Image::getHeight() const
 {
     return height;

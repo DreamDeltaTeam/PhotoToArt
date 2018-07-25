@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <limits>
 
 typedef unsigned char byte;
 using namespace std;
@@ -49,6 +50,14 @@ struct Point
 
 typedef vector<Point> Polygon;
 
+double maxX(Polygon p);
+
+double maxY(Polygon p);
+
+double minX(Polygon p);
+
+double minY(Polygon p);
+
 class Image
 {
 public:
@@ -85,6 +94,16 @@ public:
         c.r = data[y * width * channels + x * channels];
         c.g = data[y * width * channels + x * channels + 1];
         c.b = data[y * width * channels + x * channels + 2];
+
+
+        return c;
+    }
+    Color getPixel(Point p) const
+    {
+        Color c;
+        c.r = data[p.y * width * channels + p.x * channels];
+        c.g = data[p.y * width * channels + p.x * channels + 1];
+        c.b = data[p.y * width * channels + p.x * channels + 2];
 
 
         return c;

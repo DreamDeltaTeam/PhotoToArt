@@ -27,7 +27,7 @@ public:
         data [width*y + x]=0;
     }
 
-    int getPixel(int x, int y)
+    int getPixel(int x, int y) const
     {
         return data[width*y + x];
     }

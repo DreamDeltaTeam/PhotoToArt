@@ -19,7 +19,7 @@ int getError(Image &img1, Image &img2)
 
 
 
-Image put(const Image &prev, Mask &mask, Color c, float alpha)
+Image put(const Image &prev, const Mask &mask, Color c, float alpha)
 {
     Image new_image = prev;
     for(int i = 0; i < prev.getHeight(); i++) {

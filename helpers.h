@@ -22,7 +22,7 @@ struct Hitbox
 int getError(Image &img1, Image &img2);
 
 /* Функция, закрашивающая по битовой маске область на картинке */
-Image put(const Image &prev, Mask &mask, Color c, float alpha);
+Image put(const Image &prev, const Mask &mask, Color c, float alpha);
 
 
 /*======== Внутренниие вспомогательные функции =========*/

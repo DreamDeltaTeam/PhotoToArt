@@ -24,7 +24,7 @@ Color BLACK = Color(0,0,0);
 Color RED = Color(255,0,0);
 Color GREEN = Color(0,255,0);
 Color BLUE = Color(0,0,255);
-Color Yellow = Color(255,255,0);
+Color YELLOW = Color(255,255,0);
 Color SKYBLUE = Color(0,255,255);
 Color PURPLE = Color(255,0,255);
 
@@ -121,9 +121,9 @@ Polygon move_polygon (Point point_from, Point point_to, const Polygon &data,int 
 vector<Point> mutate_polygon(const Polygon &data,int w,int h){
     Polygon tmp = data;
     std::cout << tmp.size() << std::endl;
-    int side = 5;
+    int side = 200;
     int mu = w/10;
-    int sigma2=w/100;
+    int sigma2=w/4;
     Point mutated_dot = mutate_dot(Point(data[0].x,data[0].y),side,mu,sigma2, w,h);
     Point p = data[0];
     tmp = move_polygon(mutated_dot, p, tmp,w,h);
@@ -153,12 +153,9 @@ Image genQuard(Image &image,int x,int y, int w,int h,Color &c){
 //Filling image with color с
 
 Image fillImage(Image &image, Color &c){
-    int rgb=3;
     for (int i=0;i<image.getHeight();i++){
         for (int j=0;j<image.getWidth();j++){
-           int x1 =j;
-           int y1 = i;
-           image.setPixel(x1,y1,c);
+           image.setPixel(j,i,c);
         }
     }
     return image;
@@ -168,20 +165,49 @@ Image fillImage(Image &image, Color &c){
 //Тестирование графических примитивов
 //Testing graphics
 
+
+Image mutateImage(Image source, int randDots, int generations,Polygon primetive, float mu, float sigma2){
+    Image img = Image(source.getWidth(),source.getHeight(),source.channels);
+    Image img2 = Image(source.getWidth(),source.getHeight(),source.channels);
+    img = fillImage(img,WHITE);
+    img2 = fillImage(img2,WHITE);
+    int w = img.getWidth();
+    int h = img.getHeight();
+    for (int i=0 ; i<randDots; i++){
+        Polygon poly = primetive;
+        poly =  move_polygon(Point(poly[0].x,poly[0].y),Point(randDouble(mu,sigma2,0,w),randDouble(mu,sigma2,0,h)),poly,w,h);
+        Polygon poly2 = {};
+        for (int j = 0; j<generations; j++){
+            poly2 = mutate_polygon(poly,w,h);
+            img = put(img,makePolygon(poly,w,h),source.getPixel(mass_center(poly)),0.0);
+            img2 = put( img2,makePolygon(poly2,w,h),source.getPixel(mass_center(poly2)),0.0);
+            if (getError(img,source)>getError(img2,source)){
+                poly2 = poly;
+                img2=img;
+            } else {
+                poly = poly2;
+                img=img2;
+            }
+        }
+    }
+    img= img2;
+
+    return img;
+}
+
+
 int main()
 {
     gen.seed(time(0));
-    int w = 640;
-    int h = 360;
     int rgb=3;
-    Image img = Image(w,h,rgb);
-    Color red = Color(255,0,0);
-    Color white = Color(255,255,255);
-    Color green = Color(0,255,0);
-    img = fillImage(img,BLACK);
-    bool newImage = true;
-    int images = 10;
+    int images = 100;
     int delay = 25;
+    Image load = Image("primitive.png");
+
+    int w = load.width;
+    int h = load.height;
+    Image img = Image(w,h,rgb);
+    img = fillImage(img,BLACK);
     string linux1 = "convert -delay "+ to_string(delay) +" -loop 0 ";
 
 
@@ -195,8 +221,9 @@ int main()
     };
 
     int scale = 10;
-    int dx = 1;
-    int dy = 1;
+    int dx = 30;
+    int dy = 30;
+
     Polygon polygon2 = {
         {(2+dx)*scale,(6+dy)*scale},
         {(5+dx)*scale,(4+dy)*scale},
@@ -207,14 +234,18 @@ int main()
 
 
 
-    for(int g = 0;g<images;g++){
-        img = fillImage(img,BLACK);
-
+string fnames = " ";
+    //for(int g = 0;g<images;g++){
+        //img = fillImage(img,BLACK);
+        int g=0;
         Mask cur_mask = makePolygon(polygon2,w,h);
         Color c = Color(randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255));
-        img = put(img,cur_mask,c,0);
+        //img = put(img,cur_mask,c,0);
 
-        polygon2 = mutate_polygon(polygon2,w,h);
+        img = mutateImage(load,10,20,polygon2,w/2,w/10);
+        //polygon2 = mutate_polygon(polygon2,w,h);
+
+
 
         std::stringstream ss;
 
@@ -227,13 +258,15 @@ int main()
         linux1 = linux1 + filename+ " ";
         cout << filename << endl;
 
+        fnames+=filename+" ";
 
-    }
+
+    //}
 
 linux1 = linux1 + " gif5.gif";
 
 
-std::string windows = "cmd /c convert -delay "+to_string(delay)+" -loop 0 *.png anim.gif";
+std::string windows = "cmd /c convert -delay "+to_string(delay)+" -loop 0"+fnames+"anim.gif";
 #ifdef __WIN32__
 std::system(windows.data());
 std::system("convert -quality 100 *.png outputfile.mpeg");
