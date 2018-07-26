@@ -57,102 +57,244 @@ int randInt(float mu, float sigma2,int start, int end)
     return clamp(rez, start, end);
 }
 
-double randDouble(float mu, float sigma2,double start, double end)
+double normal_double(float mu, float sigma2,double start, double end)
 {
     std::normal_distribution<double> distrib(mu,sigma2);
     double rez = distrib(gen);
     return d_clamp(rez, start, end);
 }
 
-int uniform_double(double start, double end)
+double uniform_double(double start, double end)
 {
-    std::uniform_int_distribution<int> dis(start,end);
+    std::uniform_real_distribution<double> dis(start,end);
     double rez = dis(gen);
     return d_clamp(rez, start, end);
 }
 
-Point mutate_dot(Point p, double side,float mu,float sigma2,int w,int h)
+
+//vector<Point> rotate_polygon(Point p, float mu, float sigma2, const Polygon &data,int w,int h){
+//    float alpha = M_PI * randDouble(mu,sigma2,0,360) / 180;
+//    Polygon tmp = data;
+
+//    for (int i=0;i<data.size();i++){
+//        double x = (data[i].x - p.x)*cos(alpha)-(data[i].y - p.y)*sin(alpha);
+//        double y = (data[i].x - p.x)*sin(alpha)+(data[i].y - p.y)*cos(alpha);
+//        x += p.x;
+//        y += p.y;
+//        if (x<0 || x>w) return tmp;
+//        if (y<0 || y>h) return tmp;
+//    }
+
+//    for(int i = 0; i < data.size();i++){
+//        double x = (data[i].x - p.x)*cos(alpha)-(data[i].y - p.y)*sin(alpha);
+//        double y = (data[i].x - p.x)*sin(alpha)+(data[i].y - p.y)*cos(alpha);
+
+//        x += p.x;
+//        y += p.y;
+
+//        x = d_clamp(x,0,w-1);
+//        y = d_clamp(y,0,h-1);
+
+//        tmp[i].x = x;
+//        tmp[i].y = y;
+//    }
+//    return tmp;
+//}
+
+//Polygon move_polygon (Point point_from, Point point_to, const Polygon &data,int w,int h){
+//    Polygon tmp = data;
+//    double dx = -point_from.x + point_to.x;
+//    double dy = -point_from.y + point_to.y;
+//    for (int i=0; i < tmp.size();i++){
+//        if (tmp[i].x+dx<0 || tmp[i].x+dx>w) return tmp;
+//        if (tmp[i].y+dy<0 || tmp[i].y+dy>h) return tmp;
+//    }
+//    for(int i=0; i < tmp.size();i++){
+//        tmp[i].x += dx;
+//        tmp[i].y += dy;
+//        tmp[i].x = d_clamp(tmp[i].x,0,w-1);
+//        tmp[i].y = d_clamp(tmp[i].y,0,h-1);
+//    }
+
+//    return tmp;
+//}
+
+class PolyParams
 {
-    double x = uniform_double(p.x-side,p.x+side);
-    double y = uniform_double(p.y-side, p.y+side);
+public:
+    Polygon poly;
+    int x, y;
+    int w,h;
 
-    x = d_clamp(x,0,w-1);
-    y = d_clamp(y,0,h-1);
+    float angle;
+    float scaleX;
+    float scaleY;
 
-    return {x,y};
-}
+    float mu;
+    float sigma2;
 
-Point mass_center(const Polygon &p){
-    int x=0;
-    int y=0;
-    for (const Point &i : p){
-        x+=i.x;
-        y+=i.y;
-    }
-    return {x/p.size(), y/p.size()};
-}
-
-vector<Point> rotate_polygon(Point p, float mu, float sigma2, const Polygon &data,int w,int h){
-    float alpha = M_PI * randDouble(mu,sigma2,0,360) / 180;
-    Polygon tmp = data;
-
-    for (int i=0;i<data.size();i++){
-        double x = (data[i].x - p.x)*cos(alpha)-(data[i].y - p.y)*sin(alpha);
-        double y = (data[i].x - p.x)*sin(alpha)+(data[i].y - p.y)*cos(alpha);
-        x += p.x;
-        y += p.y;
-        if (x<0 || x>w) return tmp;
-        if (y<0 || y>h) return tmp;
+    Point massCenter(const Polygon &p){
+        int x=0;
+        int y=0;
+        for (const Point &i : p){
+            x+=i.x;
+            y+=i.y;
+        }
+        return {x/p.size(), y/p.size()};
     }
 
-    for(int i = 0; i < data.size();i++){
-        double x = (data[i].x - p.x)*cos(alpha)-(data[i].y - p.y)*sin(alpha);
-        double y = (data[i].x - p.x)*sin(alpha)+(data[i].y - p.y)*cos(alpha);
-
-        x += p.x;
-        y += p.y;
+    Point mutateDot(Point p,int w,int h,int side)
+    {
+        double x = uniform_double(p.x-side,p.x+side);
+        double y = uniform_double(p.y-side, p.y+side);
 
         x = d_clamp(x,0,w-1);
         y = d_clamp(y,0,h-1);
 
-        tmp[i].x = x;
-        tmp[i].y = y;
-    }
-    return tmp;
-}
-
-Polygon move_polygon (Point point_from, Point point_to, const Polygon &data,int w,int h){
-    Polygon tmp = data;
-    double dx = -point_from.x + point_to.x;
-    double dy = -point_from.y + point_to.y;
-    for (int i=0; i < tmp.size();i++){
-        if (tmp[i].x+dx<0 || tmp[i].x+dx>w) return tmp;
-        if (tmp[i].y+dy<0 || tmp[i].y+dy>h) return tmp;
-    }
-    for(int i=0; i < tmp.size();i++){
-        tmp[i].x += dx;
-        tmp[i].y += dy;
-        tmp[i].x = d_clamp(tmp[i].x,0,w-1);
-        tmp[i].y = d_clamp(tmp[i].y,0,h-1);
+        return {x,y};
     }
 
-    return tmp;
-}
+    Polygon computePoints()
+    {
+        Polygon new_poly = poly;
+        new_poly = rotatePolygon(massCenter(new_poly),angle,new_poly);
+        new_poly = scalePolygon(new_poly,scaleX,scaleY);
+        new_poly = movePolygon(massCenter(new_poly),Point(x,y),new_poly);
+        return new_poly;
 
-vector<Point> mutate_polygon(const Polygon &data,int w,int h){
-    Polygon tmp = data;
-    double side = w/10;
-    double mu = w/2;
-    double sigma2=w/10;
+    }
 
-    double mu_angle = 0;
-    double sigma_angle = 30.0;
-    Point mutated_dot = mutate_dot(Point(data[0].x,data[0].y),side,mu,sigma2, w,h);
-    Point p = data[0];
-    tmp = move_polygon(mutated_dot, p, data,w,h);
-    tmp = rotate_polygon(mass_center(tmp),mu_angle,sigma_angle,tmp,w,h);
-    return tmp;
-}
+    Polygon movePolygon(Point point_from,Point point_to,Polygon data){
+        Polygon tmp = data;
+        double dx = -point_from.x + point_to.x;
+        double dy = -point_from.y + point_to.y;
+        for (int i=0; i < tmp.size();i++){
+            if (tmp[i].x+dx<0 || tmp[i].x+dx>w) return tmp;
+            if (tmp[i].y+dy<0 || tmp[i].y+dy>h) return tmp;
+        }
+        for(int i=0; i < tmp.size();i++){
+            tmp[i].x += dx;
+            tmp[i].y += dy;
+            tmp[i].x = d_clamp(tmp[i].x,0,w-1);
+            tmp[i].y = d_clamp(tmp[i].y,0,h-1);
+        }
+
+        return tmp;
+    }
+
+
+    Polygon rotatePolygon(Point p,float angle,Polygon data){
+        //float alpha = M_PI * randDouble(mu,sigma2,0,360) / 180;
+        float alpha = angle;
+        Polygon tmp = data;
+
+        for (int i=0;i<data.size();i++){
+            double x = (data[i].x - p.x)*cos(alpha)-(data[i].y - p.y)*sin(alpha);
+            double y = (data[i].x - p.x)*sin(alpha)+(data[i].y - p.y)*cos(alpha);
+            x += p.x;
+            y += p.y;
+            if (x<0 || x>w) return tmp;
+            if (y<0 || y>h) return tmp;
+        }
+
+        for(int i = 0; i < data.size();i++){
+            double x = (data[i].x - p.x)*cos(alpha)-(data[i].y - p.y)*sin(alpha);
+            double y = (data[i].x - p.x)*sin(alpha)+(data[i].y - p.y)*cos(alpha);
+
+            x += p.x;
+            y += p.y;
+
+            x = d_clamp(x,0,w-1);
+            y = d_clamp(y,0,h-1);
+
+            tmp[i].x = x;
+            tmp[i].y = y;
+        }
+        return tmp;
+    }
+
+    Polygon scalePolygon(Polygon data,float scaleX,float scaleY){
+        Polygon tmp = data;
+
+        for (int i=0; i < tmp.size();i++){
+            if (tmp[i].x*scaleX<0 || tmp[i].x*scaleX>w) return tmp;
+            if (tmp[i].y+scaleY<0 || tmp[i].y*scaleY>h) return tmp;
+        }
+        for(int i=0; i < tmp.size();i++){
+            tmp[i].x *= scaleX;
+            tmp[i].y *= scaleY;
+            tmp[i].x = d_clamp(tmp[i].x,0,w-1);
+            tmp[i].y = d_clamp(tmp[i].y,0,h-1);
+        }
+        return tmp;
+    }
+
+    PolyParams mutatePolygon(){
+        PolyParams tmp = *this;
+        double coord_sigma = w/10;
+        tmp.mu = w/2;
+        tmp.sigma2=w/10;
+        double mu_angle = 0;
+        double sigma_angle = 30;
+
+        tmp.angle = normal_double(mu_angle,sigma_angle, -180, 180);
+
+        tmp.x += normal_double(0, coord_sigma, -w, w);
+        tmp.y += normal_double(0, coord_sigma, -h, h);
+
+        tmp.x = clamp(tmp.x, 0, w-1);
+        tmp.y = clamp(tmp.y, 0, h-1);
+
+        tmp.scaleX += normal_double(0, 0.05, -0.5, 0.5);
+        tmp.scaleX = clamp((double)tmp.scaleX, 0.5, 2.0);
+
+        tmp.scaleY += normal_double(0, 0.05, -0.5, 0.5);
+        tmp.scaleY = clamp((double)tmp.scaleY, 0.5, 2.0);
+        return tmp;
+
+    }
+
+
+
+    PolyParams(Polygon poly,int x,int y, int w,int h, float angle,float scaleX,float scaleY){
+        this->poly=poly;
+        this->x=x;
+        this->y=y;
+        this->w=w;
+        this->h=h;
+        this->angle=angle;
+        this->scaleX=scaleX;
+        this->scaleY = scaleY;
+    }
+
+    PolyParams(Polygon poly, int w, int h) :
+        poly(poly), w(w), h(h)
+    {
+        x = w / 2;
+        y = h / 2;
+
+        angle = 0;
+        scaleX = 1.0f;
+        scaleY = 1.0f;
+    }
+};
+
+//vector<Point> mutate_polygon(const Polygon &data,int w,int h){
+//    Polygon tmp = data;
+//    double side = w/10;
+//    double mu = w/2;
+//    double sigma2=w/10;
+
+//    double mu_angle = 0;
+//    double sigma_angle = 30.0;
+//    Point mutated_dot = mutateDot(Point(data[0].x,data[0].y),side,mu,sigma2, w,h);
+//    Point p = data[0];
+//    x = mutated_dot.x;
+//    y = mutated_dot.y;
+//    tmp = move_polygon(mutated_dot, p, data,w,h);
+//    tmp = rotate_polygon(mass_center(tmp),tmp,w,h);
+//    return tmp;
+//}
 
 //Рисование квадрата в координатах x,y; размерами w,h и цветом с
 //Drawing quard in coords x,y; width and height w, h and color c
@@ -188,7 +330,7 @@ Image fillImage(Image &image, Color &c){
 //Testing graphics
 
 
-vector<Image> mutateImage(Image source, int randDots, int generations, Polygon shape){
+vector<Image> mutateImage(Image source, int randDots, int generations, PolyParams shape){
     vector <Image> images;
     Image current = Image(source.getWidth(),source.getHeight(),source.channels);
     Image tmp = Image(source.getWidth(),source.getHeight(),source.channels);
@@ -205,10 +347,14 @@ vector<Image> mutateImage(Image source, int randDots, int generations, Polygon s
 
         Point  p = Point(uniform_double(0, w - 1), uniform_double(0, h - 1));
         int retries = 5;
-        Polygon primitive =  move_polygon(shape[0],p,shape,w,h);
+        PolyParams primitive = PolyParams(shape.poly,w,h);
+        primitive.x = p.x;
+        primitive.y = p.y;
+        primitive.computePoints();
+
         //cout << to_string(p.x)+" "+to_string(p.y) << endl;
-        Polygon poly = primitive;
-        Polygon poly2;
+        PolyParams poly = PolyParams(primitive.poly,w,h);
+        PolyParams poly2 = PolyParams({},w,h);
         float min_error = getError(current,source);
         cout << to_string(i)+"/"+to_string(randDots) <<endl;
 
@@ -216,14 +362,20 @@ vector<Image> mutateImage(Image source, int randDots, int generations, Polygon s
             improved = false;
             for (int j = 0; j < generations; j++) {
                 //cout << to_string(cou)+"/"+to_string(randDots*generations) <<endl;
-                poly2 = mutate_polygon(primitive,w,h);
+                //poly2 = mutate_polygon(primitive,w,h);
+
+                poly2 = poly.mutatePolygon();
+                poly2 = PolyParams(poly2.computePoints(),poly2.x,poly2.y,w,h,poly2.angle,poly2.scaleX,poly2.scaleY);
+
                 //cout << poly2[0].x << " " << poly2[0].y <<endl;
 
-                tmp = put(current,makePolygon(poly2,w,h),source.getPixel(mass_center(poly2)), 0.3);
+                tmp = put(current,makePolygon(poly2.poly,w,h),source.getPixel(poly2.massCenter(poly2.poly)), 0.3);
+
                 float cur_error = getError(tmp,source);
                 //cout << "Error:" << min_error << " " << cur_error << endl;
                 if (min_error > cur_error){
                     poly = poly2;
+                    //poly = PolyParams(poly2.poly,poly2.x,poly2.y,poly2.w,poly2.h,poly2.angle,poly2.scaleX,poly2.scaleY);
                     min_error = cur_error;
                     improved = true;
                 }
@@ -239,18 +391,19 @@ vector<Image> mutateImage(Image source, int randDots, int generations, Polygon s
         cout << "Error: " << min_error << endl;
         if(changed) {
             cout << "Improved!" << endl;
-            current = put(current,makePolygon(primitive,w,h),source.getPixel(mass_center(poly)), 0.3);
+            current = put(current,makePolygon(primitive.poly,w,h),source.getPixel(poly.massCenter(poly.poly)), 0.3);
         } else {
             cout << "No improvement" << endl;
         }
 
-        std::stringstream ss;
-        ss << "image";
-        ss << std::setfill('0') << std::setw(3) << i;
-        ss << ".png";
-        std::string filename = ss.str();
-        current.Save(filename);
-
+        if (changed){
+            std::stringstream ss;
+            ss << "image";
+            ss << std::setfill('0') << std::setw(3) << i;
+            ss << ".png";
+            std::string filename = ss.str();
+            current.Save(filename);
+        }
     }
 
     images.push_back(current);
@@ -265,7 +418,7 @@ int main()
     gen2.seed(time(0));
     int rgb=3;
     int delay = 25;
-    Image load = Image("doge.png");
+    Image load = Image("primitive.png");
 
     int w = load.width;
     int h = load.height;
@@ -283,7 +436,7 @@ int main()
     };
 
 
-    int scale = 15;
+    int scale = 5;
     int dx = 20;
     int dy = 20;
 
@@ -301,10 +454,13 @@ int main()
 //        {dx + 6 * scale, dy + 5 * scale}
 //        };
 
-    polygon2 = rotate_polygon(mass_center(polygon2), 30, 0.01, polygon2, w, h);
+    //polygon2 = rotate_polygon(mass_center(polygon2), 30, 0.01, polygon2, w, h);
     string fnames = " ";
     int g=0;
-    images = mutateImage(load,5000,3,polygon2);
+
+    PolyParams tmp = PolyParams(polygon2,w,h);
+
+    images = mutateImage(load,5000,5,tmp);
 
     for (int i=0;i<images.size();i++){
         std::stringstream ss;
