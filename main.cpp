@@ -16,7 +16,8 @@ typedef unsigned char byte;
 using namespace std;
 
 std::mt19937 gen;
-
+std::mt19937 gen2;
+std::random_device rd;
 //Константы цветов
 //Color constants
 Color WHITE = Color(255,255,255);
@@ -58,16 +59,22 @@ int randInt(float mu, float sigma2,int start, int end)
 
 int randDouble(float mu, float sigma2,double start, double end)
 {
-    std::normal_distribution<double> distrib(mu, sigma2);
+    std::normal_distribution<double> distrib(mu,sigma2);
     double rez = distrib(gen);
     return d_clamp(rez, start, end);
 }
 
-
-Point mutate_dot(Point p, int side,float mu,float sigma2,int w,int h)
+int uid_randDouble(double start, double end)
 {
-    double x = randDouble(mu,sigma2,p.x-side,p.x+side);
-    double y = randDouble(mu,sigma2,p.y-side, p.y+side);
+    std::uniform_int_distribution<int> dis(start,end);
+    double rez = dis(gen2);
+    return d_clamp(rez, start, end);
+}
+
+Point mutate_dot(Point p, double side,float mu,float sigma2,int w,int h)
+{
+    double x = uid_randDouble(p.x-side,p.x+side);
+    double y = uid_randDouble(p.y-side, p.y+side);
 
     x = d_clamp(x,0,w-1);
     y = d_clamp(y,0,h-1);
@@ -118,17 +125,15 @@ Polygon move_polygon (Point point_from, Point point_to, const Polygon &data,int 
     return tmp;
 }
 
-vector<Point> mutate_polygon(const Polygon &data,int w,int h){
+vector<Point>   mutate_polygon(const Polygon &data,int w,int h){
     Polygon tmp = data;
-    std::cout << tmp.size() << std::endl;
-    int side = 200;
-    int mu = w/10;
-    int sigma2=w/4;
+    double side = 100;
+    double mu = w/2;
+    double sigma2=4*w;
     Point mutated_dot = mutate_dot(Point(data[0].x,data[0].y),side,mu,sigma2, w,h);
     Point p = data[0];
     tmp = move_polygon(mutated_dot, p, tmp,w,h);
-    tmp = rotate_polygon(mass_center(data),mu,sigma2,data,w,h);
-    std::cout << tmp.size() << std::endl;
+    //tmp = rotate_polygon(mass_center(data),mu,sigma2,data,w,h);
     return tmp;
 }
 
@@ -166,32 +171,34 @@ Image fillImage(Image &image, Color &c){
 //Testing graphics
 
 
-Image mutateImage(Image source, int randDots, int generations,Polygon primetive, float mu, float sigma2){
+Image mutateImage(Image source, int randDots, int generations,Polygon primitive, float mu, float sigma2){
     Image img = Image(source.getWidth(),source.getHeight(),source.channels);
     Image img2 = Image(source.getWidth(),source.getHeight(),source.channels);
     img = fillImage(img,WHITE);
     img2 = fillImage(img2,WHITE);
     int w = img.getWidth();
     int h = img.getHeight();
+    long cou =0;
     for (int i=0 ; i<randDots; i++){
-        Polygon poly = primetive;
-        poly =  move_polygon(Point(poly[0].x,poly[0].y),Point(randDouble(mu,sigma2,0,w),randDouble(mu,sigma2,0,h)),poly,w,h);
-        Polygon poly2 = {};
+
+        primitive =  move_polygon(Point(primitive[0].x,primitive[0].y),Point(uid_randDouble(0,w),uid_randDouble(0,h)),primitive,w,h);
+        Polygon poly = primitive;
+        Polygon poly2;
         for (int j = 0; j<generations; j++){
+            cout << to_string(cou)+"/"+to_string(randDots*generations) <<endl;
             poly2 = mutate_polygon(poly,w,h);
             img = put(img,makePolygon(poly,w,h),source.getPixel(mass_center(poly)),0.0);
             img2 = put( img2,makePolygon(poly2,w,h),source.getPixel(mass_center(poly2)),0.0);
             if (getError(img,source)>getError(img2,source)){
-                poly2 = poly;
-                img2=img;
-            } else {
                 poly = poly2;
-                img=img2;
+                img = img2;
+            } else {
+                //poly2 = poly;
+                img2=img;
             }
+            cou++;
         }
     }
-    img= img2;
-
     return img;
 }
 
@@ -199,10 +206,11 @@ Image mutateImage(Image source, int randDots, int generations,Polygon primetive,
 int main()
 {
     gen.seed(time(0));
+    gen2 = mt19937(rd());
     int rgb=3;
     int images = 100;
     int delay = 25;
-    Image load = Image("primitive.png");
+    Image load = Image("kekkk.png");
 
     int w = load.width;
     int h = load.height;
@@ -220,9 +228,9 @@ int main()
         {randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h)}
     };
 
-    int scale = 10;
-    int dx = 30;
-    int dy = 30;
+    int scale = 5;
+    int dx = 20;
+    int dy = 20;
 
     Polygon polygon2 = {
         {(2+dx)*scale,(6+dy)*scale},
@@ -234,6 +242,7 @@ int main()
 
 
 
+
 string fnames = " ";
     //for(int g = 0;g<images;g++){
         //img = fillImage(img,BLACK);
@@ -242,7 +251,7 @@ string fnames = " ";
         Color c = Color(randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255));
         //img = put(img,cur_mask,c,0);
 
-        img = mutateImage(load,10,20,polygon2,w/2,w/10);
+        img = mutateImage(load,80,2,polygon2,w/2,w/10);
         //polygon2 = mutate_polygon(polygon2,w,h);
 
 
