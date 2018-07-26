@@ -118,8 +118,8 @@ Polygon move_polygon (Point point_from, Point point_to, const Polygon &data,int 
     for(int i=0; i < tmp.size();i++){
         tmp[i].x += dx;
         tmp[i].y += dy;
-        tmp[i].x = d_clamp(data[i].x,0,w-1);
-        tmp[i].y = d_clamp(data[i].y,0,h-1);
+        tmp[i].x = d_clamp(tmp[i].x,0,w-1);
+        tmp[i].y = d_clamp(tmp[i].y,0,h-1);
     }
 
     return tmp;
@@ -127,13 +127,13 @@ Polygon move_polygon (Point point_from, Point point_to, const Polygon &data,int 
 
 vector<Point>   mutate_polygon(const Polygon &data,int w,int h){
     Polygon tmp = data;
-    double side = 100;
+    double side = 10;
     double mu = w/2;
-    double sigma2=4*w;
+    double sigma2=w/10;
     Point mutated_dot = mutate_dot(Point(data[0].x,data[0].y),side,mu,sigma2, w,h);
     Point p = data[0];
-    tmp = move_polygon(mutated_dot, p, tmp,w,h);
-    //tmp = rotate_polygon(mass_center(data),mu,sigma2,data,w,h);
+    tmp = move_polygon(mutated_dot, p, data,w,h);
+    tmp = rotate_polygon(mass_center(data),mu,sigma2,data,w,h);
     return tmp;
 }
 
@@ -179,9 +179,11 @@ Image mutateImage(Image source, int randDots, int generations,Polygon primitive,
     int w = img.getWidth();
     int h = img.getHeight();
     long cou =0;
+    vector<Polygon> poly_vector;
     for (int i=0 ; i<randDots; i++){
-
-        primitive =  move_polygon(Point(primitive[0].x,primitive[0].y),Point(uid_randDouble(0,w),uid_randDouble(0,h)),primitive,w,h);
+        Point  p = Point(uid_randDouble(0,w),uid_randDouble(0,h));
+        primitive =  move_polygon(primitive[0],p,primitive,w,h);
+        cout << to_string(p.x)+" "+to_string(p.y) << endl;
         Polygon poly = primitive;
         Polygon poly2;
         for (int j = 0; j<generations; j++){
@@ -207,6 +209,7 @@ int main()
 {
     gen.seed(time(0));
     gen2 = mt19937(rd());
+    gen2.seed(time(0));
     int rgb=3;
     int images = 100;
     int delay = 25;
@@ -251,7 +254,7 @@ string fnames = " ";
         Color c = Color(randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255));
         //img = put(img,cur_mask,c,0);
 
-        img = mutateImage(load,80,2,polygon2,w/2,w/10);
+        img = mutateImage(load,400,8,polygon2,w/2,w/10);
         //polygon2 = mutate_polygon(polygon2,w,h);
 
 
@@ -279,7 +282,7 @@ std::string windows = "cmd /c convert -delay "+to_string(delay)+" -loop 0"+fname
 #ifdef __WIN32__
 std::system(windows.data());
 std::system("convert -quality 100 *.png outputfile.mpeg");
-std::system("anim.gif");
+std::system("image000.png");
 #else
     cout << linux1.data() << endl;
     std::system("cd /home/timofey/git/build-hello-Desktop_Qt_5_11_0_GCC_64bit-Debug/");
