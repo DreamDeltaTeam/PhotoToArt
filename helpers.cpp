@@ -1,21 +1,21 @@
 #include "helpers.h"
 
 
-int getError(Image &img1, Image &img2)
-{
-    int result = 0;
+//int getError(Image &img1, Image &img2)
+//{
+//    int result = 0;
 
-    for(int i = 0; i < img1.getHeight(); i++){
-        for(int j = 0; j < img1.getWidth(); j++){
-            Color c1 = img1.getPixel(i, j);
-            Color c2 = img2.getPixel(i, j);
+//    for(int i = 0; i < img1.getHeight(); i++){
+//        for(int j = 0; j < img1.getWidth(); j++){
+//            Color c1 = img1.getPixel(i, j);
+//            Color c2 = img2.getPixel(i, j);
 
-            result += sqr(c1.r - c2.r) + sqr(c1.g - c2.g) + sqr(c1.b - c2.b);
-        }
-    }
+//            result += sqr(c1.r - c2.r) + sqr(c1.g - c2.g) + sqr(c1.b - c2.b);
+//        }
+//    }
 
-    return result;
-}
+//    return result;
+//}
 
 
 

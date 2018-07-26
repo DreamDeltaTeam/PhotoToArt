@@ -57,24 +57,24 @@ int randInt(float mu, float sigma2,int start, int end)
     return clamp(rez, start, end);
 }
 
-int randDouble(float mu, float sigma2,double start, double end)
+double randDouble(float mu, float sigma2,double start, double end)
 {
     std::normal_distribution<double> distrib(mu,sigma2);
     double rez = distrib(gen);
     return d_clamp(rez, start, end);
 }
 
-int uid_randDouble(double start, double end)
+int uniform_double(double start, double end)
 {
     std::uniform_int_distribution<int> dis(start,end);
-    double rez = dis(gen2);
+    double rez = dis(gen);
     return d_clamp(rez, start, end);
 }
 
 Point mutate_dot(Point p, double side,float mu,float sigma2,int w,int h)
 {
-    double x = uid_randDouble(p.x-side,p.x+side);
-    double y = uid_randDouble(p.y-side, p.y+side);
+    double x = uniform_double(p.x-side,p.x+side);
+    double y = uniform_double(p.y-side, p.y+side);
 
     x = d_clamp(x,0,w-1);
     y = d_clamp(y,0,h-1);
@@ -93,7 +93,7 @@ Point mass_center(const Polygon &p){
 }
 
 vector<Point> rotate_polygon(Point p, float mu, float sigma2, const Polygon &data,int w,int h){
-    int alpha = randInt(mu,sigma2,0,360);
+    float alpha = M_PI * randDouble(mu,sigma2,0,360) / 180;
     Polygon tmp = data;
 
     for (int i=0;i<data.size();i++){
@@ -125,7 +125,7 @@ Polygon move_polygon (Point point_from, Point point_to, const Polygon &data,int 
     Polygon tmp = data;
     double dx = -point_from.x + point_to.x;
     double dy = -point_from.y + point_to.y;
-    for (int i=0; i<tmp.size();i++){
+    for (int i=0; i < tmp.size();i++){
         if (tmp[i].x+dx<0 || tmp[i].x+dx>w) return tmp;
         if (tmp[i].y+dy<0 || tmp[i].y+dy>h) return tmp;
     }
@@ -139,15 +139,18 @@ Polygon move_polygon (Point point_from, Point point_to, const Polygon &data,int 
     return tmp;
 }
 
-vector<Point>   mutate_polygon(const Polygon &data,int w,int h){
+vector<Point> mutate_polygon(const Polygon &data,int w,int h){
     Polygon tmp = data;
     double side = w/10;
     double mu = w/2;
     double sigma2=w/10;
+
+    double mu_angle = 0;
+    double sigma_angle = 30.0;
     Point mutated_dot = mutate_dot(Point(data[0].x,data[0].y),side,mu,sigma2, w,h);
     Point p = data[0];
     tmp = move_polygon(mutated_dot, p, data,w,h);
-    tmp = rotate_polygon(mass_center(data),mu,sigma2,data,w,h);
+    tmp = rotate_polygon(mass_center(tmp),mu_angle,sigma_angle,tmp,w,h);
     return tmp;
 }
 
@@ -189,51 +192,65 @@ vector<Image> mutateImage(Image source, int randDots, int generations, Polygon s
     vector <Image> images;
     Image current = Image(source.getWidth(),source.getHeight(),source.channels);
     Image tmp = Image(source.getWidth(),source.getHeight(),source.channels);
-    current = fillImage(current,WHITE);
+    current = fillImage(current,BLACK);
     tmp = current;
     int w = current.getWidth();
     int h = current.getHeight();
-    long cou =0;
-    bool improved;
+    long cou = 0;
 
 
-    improved = false;
     for (int i=0; i < randDots; i++) {
-        Point  p = Point(uid_randDouble(0, w -1), uid_randDouble(0, h - 1));
-        int retries = 10;
+        bool improved = false;
+        bool changed = false;
+
+        Point  p = Point(uniform_double(0, w - 1), uniform_double(0, h - 1));
+        int retries = 5;
         Polygon primitive =  move_polygon(shape[0],p,shape,w,h);
-        cout << to_string(p.x)+" "+to_string(p.y) << endl;
+        //cout << to_string(p.x)+" "+to_string(p.y) << endl;
         Polygon poly = primitive;
         Polygon poly2;
-        unsigned min_error = getError(current,source);
+        float min_error = getError(current,source);
+        cout << to_string(i)+"/"+to_string(randDots) <<endl;
 
         for(int k = 0; k < retries; k++) {
             improved = false;
             for (int j = 0; j < generations; j++) {
                 //cout << to_string(cou)+"/"+to_string(randDots*generations) <<endl;
                 poly2 = mutate_polygon(primitive,w,h);
+                //cout << poly2[0].x << " " << poly2[0].y <<endl;
+
                 tmp = put(current,makePolygon(poly2,w,h),source.getPixel(mass_center(poly2)), 0.3);
-                unsigned cur_error = getError(tmp,source);
+                float cur_error = getError(tmp,source);
+                //cout << "Error:" << min_error << " " << cur_error << endl;
                 if (min_error > cur_error){
                     poly = poly2;
                     min_error = cur_error;
                     improved = true;
                 }
-
-                cou++;
             }
 
             if(improved) {
                 primitive = poly;
+                changed = true;
             }
         }
+        cou++;
 
-        if(improved) {
+        cout << "Error: " << min_error << endl;
+        if(changed) {
             cout << "Improved!" << endl;
             current = put(current,makePolygon(primitive,w,h),source.getPixel(mass_center(poly)), 0.3);
         } else {
             cout << "No improvement" << endl;
         }
+
+        std::stringstream ss;
+        ss << "image";
+        ss << std::setfill('0') << std::setw(3) << i;
+        ss << ".png";
+        std::string filename = ss.str();
+        current.Save(filename);
+
     }
 
     images.push_back(current);
@@ -248,7 +265,7 @@ int main()
     gen2.seed(time(0));
     int rgb=3;
     int delay = 25;
-    Image load = Image("primitive.png");
+    Image load = Image("doge.png");
 
     int w = load.width;
     int h = load.height;
@@ -265,6 +282,7 @@ int main()
         {randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h)}
     };
 
+
     int scale = 15;
     int dx = 20;
     int dy = 20;
@@ -276,9 +294,17 @@ int main()
         {(2+dx)*scale,(0+dy)*scale},
         {(0+dx)*scale,(4+dy)*scale}
     };
+//    Polygon polygon2 = {
+//        {dx +5 * scale, dy +  5 * scale},
+//        {dx + 5 * scale, dy + 40 * scale},
+//        {dx + 6 * scale, dy + 40 * scale},
+//        {dx + 6 * scale, dy + 5 * scale}
+//        };
+
+    polygon2 = rotate_polygon(mass_center(polygon2), 30, 0.01, polygon2, w, h);
     string fnames = " ";
     int g=0;
-    images = mutateImage(load,300,20,polygon2);
+    images = mutateImage(load,5000,3,polygon2);
 
     for (int i=0;i<images.size();i++){
         std::stringstream ss;

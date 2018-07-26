@@ -1,18 +1,26 @@
 #include "image.h"
-unsigned int getError(const Image &img1, const Image &img2){
+float getError(const Image &img1, const Image &img2){
     Color col1;
     Color col2;
-    unsigned int help=0;
-    for(unsigned int i = 0; i<img1.height; i++){
-        for(unsigned int u = 0;u<img1.width; u++){
+    float sum = 0;
+
+    int width = img1.getWidth();
+    int height = img2.getHeight();
+
+    for(unsigned int i = 0; i < img1.getHeight(); i++){
+        for(unsigned int u = 0; u < img1.getWidth(); u++){
             col1 = img1.getPixel(u, i);
             col2 = img2.getPixel(u, i);
-            help+=(col1.r-col2.r)*(col1.r-col2.r)+
+
+            float diff =(col1.r-col2.r)*(col1.r-col2.r)+
                   (col1.g-col2.g)*(col1.g-col2.g)+
                   (col1.b-col2.b)*(col1.b-col2.b);
+
+            diff /= float(width * height);
+            sum += diff;
         }
     }
-    return help;
+    return sum;
 }
 
 double maxX(Polygon p){

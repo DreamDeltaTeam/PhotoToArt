@@ -117,7 +117,6 @@ public:
     }
 
     void Save(const string &name){
-        std::cout << data.size() << " " << width * height * 3 << std::endl;
         lodepng::encode(name,data,width,height,LCT_RGB,8);
     }
     unsigned int getWidth() const;
@@ -125,7 +124,7 @@ public:
 };
 
 
-unsigned int getError(const Image &img1, const Image &img2);
+float getError(const Image &img1, const Image &img2);
 
 
 #endif // IMAGE_H
