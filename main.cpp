@@ -95,6 +95,16 @@ Point mass_center(const Polygon &p){
 vector<Point> rotate_polygon(Point p, float mu, float sigma2, const Polygon &data,int w,int h){
     int alpha = randInt(mu,sigma2,0,360);
     Polygon tmp = data;
+
+    for (int i=0;i<data.size();i++){
+        double x = (data[i].x - p.x)*cos(alpha)-(data[i].y - p.y)*sin(alpha);
+        double y = (data[i].x - p.x)*sin(alpha)+(data[i].y - p.y)*cos(alpha);
+        x += p.x;
+        y += p.y;
+        if (x<0 || x>w) return tmp;
+        if (y<0 || y>h) return tmp;
+    }
+
     for(int i = 0; i < data.size();i++){
         double x = (data[i].x - p.x)*cos(alpha)-(data[i].y - p.y)*sin(alpha);
         double y = (data[i].x - p.x)*sin(alpha)+(data[i].y - p.y)*cos(alpha);
@@ -115,6 +125,10 @@ Polygon move_polygon (Point point_from, Point point_to, const Polygon &data,int 
     Polygon tmp = data;
     double dx = point_from.x-point_to.x;
     double dy = point_from.y-point_to.y;
+    for (int i=0; i<tmp.size();i++){
+        if (tmp[i].x+dx<0 || tmp[i].x+dx>w) return tmp;
+        if (tmp[i].y+dy<0 || tmp[i].y+dy>h) return tmp;
+    }
     for(int i=0; i < tmp.size();i++){
         tmp[i].x += dx;
         tmp[i].y += dy;
@@ -171,37 +185,48 @@ Image fillImage(Image &image, Color &c){
 //Testing graphics
 
 
-Image mutateImage(Image source, int randDots, int generations,Polygon primitive, float mu, float sigma2){
-    Image img = Image(source.getWidth(),source.getHeight(),source.channels);
-    Image img2 = Image(source.getWidth(),source.getHeight(),source.channels);
-    img = fillImage(img,WHITE);
-    img2 = fillImage(img2,WHITE);
-    int w = img.getWidth();
-    int h = img.getHeight();
+vector<Image> mutateImage(Image source, int randDots, int generations, Polygon shape){
+    vector <Image> images;
+    Image current = Image(source.getWidth(),source.getHeight(),source.channels);
+    Image tmp = Image(source.getWidth(),source.getHeight(),source.channels);
+    current = fillImage(current,BLACK);
+    tmp = current;
+    int w = current.getWidth();
+    int h = current.getHeight();
     long cou =0;
-    vector<Polygon> poly_vector;
-    for (int i=0 ; i<randDots; i++){
-        Point  p = Point(uid_randDouble(0,w),uid_randDouble(0,h));
-        primitive =  move_polygon(primitive[0],p,primitive,w,h);
+
+    for (int i=0; i < randDots; i++) {
+        Point  p = Point(uid_randDouble(0, w -1), uid_randDouble(0, h - 1));
+
+        Polygon primitive =  move_polygon(shape[0],p,shape,w,h);
         cout << to_string(p.x)+" "+to_string(p.y) << endl;
         Polygon poly = primitive;
         Polygon poly2;
-        for (int j = 0; j<generations; j++){
+        unsigned min_error = getError(current,source);
+
+        bool improved = false;
+        for (int j = 0; j < generations; j++) {
             cout << to_string(cou)+"/"+to_string(randDots*generations) <<endl;
             poly2 = mutate_polygon(poly,w,h);
-            img = put(img,makePolygon(poly,w,h),source.getPixel(mass_center(poly)),0.0);
-            img2 = put( img2,makePolygon(poly2,w,h),source.getPixel(mass_center(poly2)),0.0);
-            if (getError(img,source)>getError(img2,source)){
+            tmp = put(current,makePolygon(poly2,w,h),source.getPixel(mass_center(poly2)), 0.3);
+            unsigned cur_error = getError(tmp,source);
+            if (min_error > cur_error){
                 poly = poly2;
-                img = img2;
-            } else {
-                //poly2 = poly;
-                img2=img;
+                min_error = cur_error;
+                improved = true;
             }
+
             cou++;
         }
+
+        if(improved) {
+            current = put(current,makePolygon(poly,w,h),source.getPixel(mass_center(poly)), 0.3);
+        }
+
+        images.push_back(current);
+
     }
-    return img;
+    return images;
 }
 
 
@@ -211,14 +236,12 @@ int main()
     gen2 = mt19937(rd());
     gen2.seed(time(0));
     int rgb=3;
-    int images = 100;
     int delay = 25;
     Image load = Image("kekkk.png");
 
     int w = load.width;
     int h = load.height;
-    Image img = Image(w,h,rgb);
-    img = fillImage(img,BLACK);
+    vector<Image> images;
     string linux1 = "convert -delay "+ to_string(delay) +" -loop 0 ";
 
 
@@ -242,47 +265,28 @@ int main()
         {(2+dx)*scale,(0+dy)*scale},
         {(0+dx)*scale,(4+dy)*scale}
     };
+    string fnames = " ";
+    int g=0;
+    images = mutateImage(load,5000,10,polygon2);
 
-
-
-
-string fnames = " ";
-    //for(int g = 0;g<images;g++){
-        //img = fillImage(img,BLACK);
-        int g=0;
-        Mask cur_mask = makePolygon(polygon2,w,h);
-        Color c = Color(randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255),randInt(w/2,w/10,0,255));
-        //img = put(img,cur_mask,c,0);
-
-        img = mutateImage(load,400,8,polygon2,w/2,w/10);
-        //polygon2 = mutate_polygon(polygon2,w,h);
-
-
-
+    for (int i=0;i<images.size();i++){
         std::stringstream ss;
-
         ss << "image";
-        ss << std::setfill('0') << std::setw(3) << g;
+        ss << std::setfill('0') << std::setw(3) << i;
         ss << ".png";
-        std::string filename = ss.str();//"image" + to_string(g) + ".png";
-        img.Save(filename);
-
+        std::string filename = ss.str();
+        images[i].Save(filename);
         linux1 = linux1 + filename+ " ";
         cout << filename << endl;
-
         fnames+=filename+" ";
+    }
 
-
-    //}
-
-linux1 = linux1 + " gif5.gif";
-
-
-std::string windows = "cmd /c convert -delay "+to_string(delay)+" -loop 0"+fnames+"anim.gif";
+    linux1 = linux1 + " gif5.gif";
+    std::string windows = "cmd /c convert -delay "+to_string(delay)+" -loop 0"+fnames+"anim.gif";
 #ifdef __WIN32__
-std::system(windows.data());
-std::system("convert -quality 100 *.png outputfile.mpeg");
-std::system("image000.png");
+    std::system(windows.data());
+    std::system("convert -quality 100 *.png outputfile.mpeg");
+    std::system("anim.gif");
 #else
     cout << linux1.data() << endl;
     std::system("cd /home/timofey/git/build-hello-Desktop_Qt_5_11_0_GCC_64bit-Debug/");
@@ -290,7 +294,5 @@ std::system("image000.png");
     std::system("xviewer gif5.gif");
 
 #endif
-
-
     return 0;
 }
