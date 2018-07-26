@@ -418,7 +418,7 @@ int main()
     gen2.seed(time(0));
     int rgb=3;
     int delay = 25;
-    Image load = Image("primitive.png");
+    Image load = Image("kekkkk.png");
 
     int w = load.width;
     int h = load.height;
