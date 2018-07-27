@@ -74,6 +74,17 @@ double uniform_double(double start, double end)
     return d_clamp(rez, start, end);
 }
 
+Point center_of_mass(const Polygon &p){
+    double x=0;
+    double y=0;
+    for (const Point &i : p){
+        x+=i.x;
+        y+=i.y;
+    }
+    return {x/p.size(), y/p.size()};
+}
+
+
 class PolyParams
 {
 public:
@@ -89,8 +100,8 @@ public:
     float sigma2;
 
     Point massCenter(const Polygon &p){
-        int x=0;
-        int y=0;
+        double x=0;
+        double y=0;
         for (const Point &i : p){
             x+=i.x;
             y+=i.y;
@@ -169,17 +180,23 @@ public:
 
     Polygon scalePolygon(Polygon data,float scaleX,float scaleY){
         Polygon tmp = data;
+        Point massC = massCenter(tmp);
 
-        for (int i=0; i < tmp.size();i++){
-            if (tmp[i].x*scaleX<0 || tmp[i].x*scaleX>w) return tmp;
-            if (tmp[i].y+scaleY<0 || tmp[i].y*scaleY>h) return tmp;
-        }
         for(int i=0; i < tmp.size();i++){
+            tmp[i].x -= massC.x;
+            tmp[i].y -= massC.y;
+
             tmp[i].x *= scaleX;
             tmp[i].y *= scaleY;
+
+            tmp[i].x += massC.x;
+            tmp[i].y += massC.y;
+
             tmp[i].x = d_clamp(tmp[i].x,0,w-1);
             tmp[i].y = d_clamp(tmp[i].y,0,h-1);
+
         }
+
         return tmp;
     }
 
@@ -200,7 +217,7 @@ public:
         tmp.y = clamp(tmp.y, 0, h-1);
 
         tmp.scaleX += normal_double(0, 0.05, -0.5, 0.5);
-        tmp.scaleX = clamp((double)tmp.scaleX, 0.5, 2.0);
+        tmp.scaleX = clamp((double)tmp.scaleX,0.5, 2.0);
 
         tmp.scaleY += normal_double(0, 0.05, -0.5, 0.5);
         tmp.scaleY = clamp((double)tmp.scaleY, 0.5, 2.0);
@@ -291,11 +308,10 @@ vector<Image> mutateImage(Image source, int randDots, int generations, int retri
         PolyParams primitive = PolyParams(shape.poly,w,h);
         primitive.x = p.x;
         primitive.y = p.y;
-        primitive.computePoints();
 
         //cout << to_string(p.x)+" "+to_string(p.y) << endl;
-        PolyParams poly = PolyParams(primitive.poly,w,h);
-        PolyParams poly2 = PolyParams({},w,h);
+        PolyParams poly = primitive;
+        PolyParams poly2 = primitive;
         float min_error = getError(current,source);
         cout << to_string(i)+"/"+to_string(randDots) <<endl;
 
@@ -303,8 +319,9 @@ vector<Image> mutateImage(Image source, int randDots, int generations, int retri
             improved = false;
             for (int j = 0; j < generations; j++) {
                 poly2 = poly.mutatePolygon();
-                poly2 = PolyParams(poly2.computePoints(),poly2.x,poly2.y,w,h,poly2.angle,poly2.scaleX,poly2.scaleY);
-                tmp = put(current,makePolygon(poly2.poly,w,h),source.getPixel(poly2.massCenter(poly2.poly)), 0.3);
+                Polygon transformed = poly2.computePoints();
+                Point center = center_of_mass(transformed);
+                tmp = put(current, makePolygon(transformed,w,h), source.getPixel(center), 0.3);
                 float cur_error = getError(tmp,source);
                 if (min_error > cur_error){
                     poly = poly2;
@@ -322,8 +339,13 @@ vector<Image> mutateImage(Image source, int randDots, int generations, int retri
         cout << "Error: " << min_error << endl;
         file << to_string(min_error) <<endl;
         if(changed) {
+            Polygon transformed = primitive.computePoints();
+            Point center = center_of_mass(transformed);
+
             cout << "Improved!" << endl;
-            current = put(current,makePolygon(primitive.poly,w,h),source.getPixel(poly.massCenter(poly.poly)), 0.3);
+
+
+            current = put(current,makePolygon(transformed,w,h),source.getPixel(center), 0.3);
         } else {
             cout << "No improvement" << endl;
         }
