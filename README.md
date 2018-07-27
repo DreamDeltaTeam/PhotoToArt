@@ -1,6 +1,6 @@
 This is an educational project of machine learning written on C++.
 
-#Examples
+# Examples #
 
 | Input image          | Processing image | Output image      |
 |----------------------|------------------|-------------------|
