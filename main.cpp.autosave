@@ -264,7 +264,7 @@ Image fillImage(Image &image, Color &c){
 //Testing graphics
 
 
-vector<Image> mutateImage(Image source, int randDots, int generations, PolyParams shape){
+vector<Image> mutateImage(Image source, int randDots, int generations,int retries, PolyParams shape){
     vector <Image> images;
     ofstream file;
     file.open("err_fun.data");
