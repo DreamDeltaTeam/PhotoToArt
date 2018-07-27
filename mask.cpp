@@ -41,13 +41,15 @@ Mask makePolygon(vector <Point> points,int w,int h)
             m.putOne(found[0],y);
         }
 
-        if(found.size() == 2) {
-            for(int x=found[0];x<=found[1];x++){
-                if (x<0) break;
-                if (x>w) break;
-                if (y<0) break;
-                if (y>h) break;
-                m.putOne(x,y);
+        if(found.size() > 1) {
+            for(int i = 0; i < found.size() - 1; i+=2) {
+                for(int x=found[i];x<=found[i+1];x++){
+                    if (x<0) break;
+                    if (x>w) break;
+                    if (y<0) break;
+                    if (y>h) break;
+                    m.putOne(x,y);
+                }
             }
         }
     }
