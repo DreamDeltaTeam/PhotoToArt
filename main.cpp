@@ -367,6 +367,33 @@ vector<Image> mutateImage(Image source, int randDots, int generations, int retri
     return images;
 }
 
+Polygon pentagon(float scale,int dx,int dy){
+   return {
+       {(2+dx)*scale,(6+dy)*scale},
+       {(5+dx)*scale,(4+dy)*scale},
+       {(5+dx)*scale,(1+dy)*scale},
+       {(2+dx)*scale,(0+dy)*scale},
+       {(0+dx)*scale,(4+dy)*scale}
+   };
+}
+
+Polygon starPolygon (float scale,int dx,int dy){
+    return {
+        {(3+dx)*scale,(1+dy)*scale},
+        {(3.5+dx)*scale,(2+dy)*scale},
+        {(5+dx)*scale,(2+dy)*scale},
+        {(4+dx)*scale,(3.5+dy)*scale},
+        {(5+dx)*scale,(5+dy)*scale},
+        {(3.5+dx)*scale,(5+dy)*scale},
+        {(3+dx)*scale,(6+dy)*scale},
+        {(2.5+dx)*scale,(5+dy)*scale},
+        {(1+dx)*scale,(5+dy)*scale},
+        {(2+dx)*scale,(3.5+dy)*scale},
+        {(1+dx)*scale,(2+dy)*scale},
+        {(2.5+dx)*scale,(2+dy)*scale}
+      };
+}
+
 
 int main(int argc, char **argv)
 {
@@ -417,26 +444,10 @@ int main(int argc, char **argv)
     int dx = 20;
     int dy = 20;
 
-    Polygon polygon2 = {
-        {(2+dx)*scale,(6+dy)*scale},
-        {(5+dx)*scale,(4+dy)*scale},
-        {(5+dx)*scale,(1+dy)*scale},
-        {(2+dx)*scale,(0+dy)*scale},
-        {(0+dx)*scale,(4+dy)*scale}
-    };
-    Polygon star = {
-         {(1+dx)*scale,(1+dy)*scale},
-         {(3+dx)*scale,(2+dy)*scale},
-         {(5+dx)*scale,(1+dy)*scale},
-         {(4+dx)*scale,(2.5+dy)*scale},
-         {(5+dx)*scale,(4+dy)*scale},
-         {(3.5+dx)*scale,(5+dy)*scale},
-         {(3+dx)*scale,(6+dy)*scale},
-         {(2.5+dx)*scale,(5+dy)*scale},
-         {(1+dx)*scale,(5+dy)*scale},
-         {(2+dx)*scale,(2.5+dy)*scale}
-       };
+    Polygon polygon2 = pentagon(scale,dx,dy);
+    Polygon star = starPolygon(scale,dx,dy);
 
+    //Polygon star = {{0,0},{6,6}};
     string fnames = " ";
     int g=0;
 
