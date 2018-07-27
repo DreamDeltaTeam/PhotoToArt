@@ -4,6 +4,6 @@ This is an educational project of machine learning written on C++.
 
 | Input image          | Processing image | Output image      |
 |----------------------|------------------|-------------------|
-| ![](images/sample04_input.png) |                  |![](images/sample04_output.png)|
+| ![](/images/sample04_input.png) |                  |![](/images/sample04_output.png)|
 |                      |                  |                   |
 |                      |                  |                   |
