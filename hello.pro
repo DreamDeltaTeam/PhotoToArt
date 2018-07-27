@@ -13,7 +13,8 @@ SOURCES += \
         image.cpp \
         image.h \
         mask.h \
-        mask.cpp
+        mask.cpp \
+        cxxopts.hpp
 
 HEADERS +=
 

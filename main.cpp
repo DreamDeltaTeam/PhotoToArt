@@ -12,6 +12,9 @@
 #include "helpers.h"
 #include "image.h"
 #include "mask.h"
+
+#include "cxxopts.hpp"
+
 typedef unsigned char byte;
 using namespace std;
 
@@ -264,7 +267,7 @@ Image fillImage(Image &image, Color &c){
 //Testing graphics
 
 
-vector<Image> mutateImage(Image source, int randDots, int generations, PolyParams shape){
+vector<Image> mutateImage(Image source, int randDots, int generations, int retries, PolyParams shape){
     vector <Image> images;
     ofstream file;
     file.open("err_fun.data");
@@ -285,7 +288,6 @@ vector<Image> mutateImage(Image source, int randDots, int generations, PolyParam
         bool changed = false;
 
         Point  p = Point(uniform_double(0, w - 1), uniform_double(0, h - 1));
-        int retries = 5;
         PolyParams primitive = PolyParams(shape.poly,w,h);
         primitive.x = p.x;
         primitive.y = p.y;
@@ -344,8 +346,28 @@ vector<Image> mutateImage(Image source, int randDots, int generations, PolyParam
 }
 
 
-int main()
+int main(int argc, char **argv)
 {
+    cxxopts::Options options("PhotoToArt", "Use genetic algorithm to generate a painting!");
+
+    int rand_dots = 2000;
+    int generations = 5;
+    int retries = 5;
+    string input_image;
+    float alpha = 0.3;
+    int scale = 5;
+
+    options.allow_unrecognised_options()
+          .add_options()
+          ("d,dots", "Number of primitives", cxxopts::value<int>(rand_dots))
+          ("g,gen", "Number of mutations per point", cxxopts::value<int>(generations))
+          ("r,retries", "Number of genetic algorithm steps", cxxopts::value<int>(retries))
+          ("a,alpha", "Alpha", cxxopts::value<float>(alpha))
+          ("i, input", "Input image", cxxopts::value<std::string>(input_image))
+          ("s, scale", "Scale", cxxopts::value<int>(scale));
+
+
+    options.parse(argc, argv);
     gen.seed(time(0));
     gen2 = mt19937(rd());
     gen2.seed(time(0));
@@ -353,7 +375,7 @@ int main()
     int delay = 25;
     string fname ="athens.png";
 
-    Image load = Image(fname);
+    Image load = Image(input_image);
 
     int w = load.width;
     int h = load.height;
@@ -370,8 +392,6 @@ int main()
         {randInt(w/2,w/10,0,w),randInt(h/2,h/10,0,h)}
     };
 
-
-    int scale = 5;
     int dx = 20;
     int dy = 20;
 
@@ -388,7 +408,7 @@ int main()
 
     PolyParams tmp = PolyParams(polygon2,w,h);
 
-    images = mutateImage(load,5000,5,tmp);
+    images = mutateImage(load,rand_dots, generations, retries, tmp);
 
     for (int i=0;i<images.size();i++){
         std::stringstream ss;
