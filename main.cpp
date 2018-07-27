@@ -395,7 +395,7 @@ int main(int argc, char **argv)
     gen2.seed(time(0));
     int rgb=3;
     int delay = 25;
-    string fname ="athens.png";
+    string fname ="kekkkk.png";
 
     Image load = Image(input_image);
 
@@ -424,11 +424,23 @@ int main(int argc, char **argv)
         {(2+dx)*scale,(0+dy)*scale},
         {(0+dx)*scale,(4+dy)*scale}
     };
+    Polygon star = {
+         {(1+dx)*scale,(1+dy)*scale},
+         {(3+dx)*scale,(2+dy)*scale},
+         {(5+dx)*scale,(1+dy)*scale},
+         {(4+dx)*scale,(2.5+dy)*scale},
+         {(5+dx)*scale,(4+dy)*scale},
+         {(3.5+dx)*scale,(5+dy)*scale},
+         {(3+dx)*scale,(6+dy)*scale},
+         {(2.5+dx)*scale,(5+dy)*scale},
+         {(1+dx)*scale,(5+dy)*scale},
+         {(2+dx)*scale,(2.5+dy)*scale}
+       };
 
     string fnames = " ";
     int g=0;
 
-    PolyParams tmp = PolyParams(polygon2,w,h);
+    PolyParams tmp = PolyParams(star,w,h);
 
     images = mutateImage(load,rand_dots, generations, retries, tmp);
 
