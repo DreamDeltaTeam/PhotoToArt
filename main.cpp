@@ -216,10 +216,10 @@ public:
         tmp.x = clamp(tmp.x, 0, w-1);
         tmp.y = clamp(tmp.y, 0, h-1);
 
-        tmp.scaleX += normal_double(0, 0.05, -0.5, 0.5);
+        tmp.scaleX += normal_double(0, 0.5, -0.5, 0.5);
         tmp.scaleX = clamp((double)tmp.scaleX,0.5, 2.0);
 
-        tmp.scaleY += normal_double(0, 0.05, -0.5, 0.5);
+        tmp.scaleY += normal_double(0, 0.5, -0.5, 0.5);
         tmp.scaleY = clamp((double)tmp.scaleY, 0.5, 2.0);
         return tmp;
 
