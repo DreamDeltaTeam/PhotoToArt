@@ -394,16 +394,31 @@ Polygon starPolygon (float scale,int dx,int dy){
       };
 }
 
+Polygon kap(float scale,int dx,int dy){
+   return {
+       {(3+dx)*scale,(8+dy)*scale},
+       {(2+dx)*scale,(6+dy)*scale},
+       {(1+dx)*scale,(4+dy)*scale},
+       {(1.5+dx)*scale,(2.5+dy)*scale},
+       {(2+dx)*scale,(2+dy)*scale},
+       {(2.6+dx)*scale,(1.5+dy)*scale},
+       {(3.4+dx)*scale,(1.5+dy)*scale},
+       {(4+dx)*scale,(2+dy)*scale},
+       {(4.5+dx)*scale,(2.5+dy)*scale},
+       {(5+dx)*scale,(4+dy)*scale},
+       {(4+dx)*scale,(6+dy)*scale}
+   };
+}
 
 int main(int argc, char **argv)
 {
     cxxopts::Options options("PhotoToArt", "Use genetic algorithm to generate a painting!");
 
-    int rand_dots = 2000;
-    int generations = 5;
+    int rand_dots = 5000;
+    int generations = 12;
     int retries = 5;
     string input_image;
-    float alpha = 0.3;
+    float alpha = 0.4;
     int scale = 5;
 
     options.allow_unrecognised_options()
@@ -422,7 +437,7 @@ int main(int argc, char **argv)
     gen2.seed(time(0));
     int rgb=3;
     int delay = 25;
-    string fname ="kekkkk.png";
+    string fname ="img1.png";
 
     Image load = Image(input_image);
 
@@ -446,12 +461,13 @@ int main(int argc, char **argv)
 
     Polygon polygon2 = pentagon(scale,dx,dy);
     Polygon star = starPolygon(scale,dx,dy);
+    Polygon kapp = kap(scale,dx,dy);
 
     //Polygon star = {{0,0},{6,6}};
     string fnames = " ";
     int g=0;
 
-    PolyParams tmp = PolyParams(star,w,h);
+    PolyParams tmp = PolyParams(kapp,w,h);
 
     images = mutateImage(load,rand_dots, generations, retries, tmp);
 
