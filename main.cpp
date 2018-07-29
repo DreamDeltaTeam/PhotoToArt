@@ -437,7 +437,7 @@ int main(int argc, char **argv)
     gen2.seed(time(0));
     int rgb=3;
     int delay = 25;
-    string fname ="img1.png";
+    string fname ="shrek.png";
 
     Image load = Image(input_image);
 
@@ -467,21 +467,9 @@ int main(int argc, char **argv)
     string fnames = " ";
     int g=0;
 
-    PolyParams tmp = PolyParams(kapp,w,h);
+    PolyParams tmp = PolyParams(star,w,h);
 
     images = mutateImage(load,rand_dots, generations, retries, tmp);
-
-    for (int i=0;i<images.size();i++){
-        std::stringstream ss;
-        ss << "image";
-        ss << std::setfill('0') << std::setw(3) << i;
-        ss << ".png";
-        std::string filename = ss.str();
-        images[i].Save(filename);
-        linux1 = linux1 + filename+ " ";
-        cout << filename << endl;
-        fnames+=filename+" ";
-    }
 
     linux1 = linux1 + " gif5.gif";
     std::string windows = "cmd /c convert -delay "+to_string(delay)+" -loop 0"+fnames+"anim.gif";

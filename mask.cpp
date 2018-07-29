@@ -30,7 +30,7 @@ Mask makePolygon(vector <Point> points,int w,int h)
 
             if((p1.y-y)*(p2.y-y)<=0){
                 int x = intersection(p1,p2,y);
-                if(std::find(found.begin(), found.end(), x) == found.end())
+                //if(std::find(found.begin(), found.end(), x) == found.end())
                     found.push_back(x);
             }
         }
@@ -45,9 +45,9 @@ Mask makePolygon(vector <Point> points,int w,int h)
             for(int i = 0; i < found.size() - 1; i+=2) {
                 for(int x=found[i];x<=found[i+1];x++){
                     if (x<0) break;
-                    if (x>w) break;
+                    if (x>=w) break;
                     if (y<0) break;
-                    if (y>h) break;
+                    if (y>=h) break;
                     m.putOne(x,y);
                 }
             }
